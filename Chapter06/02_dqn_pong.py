@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from lib import dqn_model, wrappers
+from lib import dqn_model, utils, wrappers
 from torch.utils.tensorboard import SummaryWriter
 
 DEFAULT_ENV_NAME = "PongNoFrameskip-v4"
@@ -25,7 +25,9 @@ EPSILON_START = 1.0
 EPSILON_FINAL = 0.01
 
 
-Experience = collections.namedtuple("Experience", field_names=["state", "action", "reward", "done", "new_state"])
+Experience = collections.namedtuple(
+    "Experience", field_names=["state", "action", "reward", "terminated", "truncated", "new_state"]
+)
 
 
 class ExperienceBuffer:
@@ -40,12 +42,13 @@ class ExperienceBuffer:
 
     def sample(self, batch_size):
         indices = np.random.choice(len(self.buffer), batch_size, replace=False)
-        states, actions, rewards, dones, next_states = zip(*[self.buffer[idx] for idx in indices])
+        states, actions, rewards, terminateds, truncateds, next_states = zip(*[self.buffer[idx] for idx in indices])
         return (
             np.array(states),
             np.array(actions),
             np.array(rewards, dtype=np.float32),
-            np.array(dones, dtype=np.uint8),
+            np.array(terminateds, dtype=np.uint8),
+            np.array(truncateds, dtype=np.uint8),
             np.array(next_states),
         )
 
@@ -57,7 +60,7 @@ class Agent:
         self._reset()
 
     def _reset(self):
-        self.state = env.reset()
+        self.state, _ = env.reset()
         self.total_reward = 0.0
 
     @torch.no_grad()
@@ -74,26 +77,26 @@ class Agent:
             action = int(act_v.item())
 
         # do step in the environment
-        new_state, reward, is_done, _ = self.env.step(action)
+        new_state, reward, terminated, truncated, _ = self.env.step(action)
         self.total_reward += reward
 
-        exp = Experience(self.state, action, reward, is_done, new_state)
+        exp = Experience(self.state, action, reward, terminated, truncated, new_state)
         self.exp_buffer.append(exp)
         self.state = new_state
-        if is_done:
+        if terminated or truncated:
             done_reward = self.total_reward
             self._reset()
         return done_reward
 
 
 def calc_loss(batch, net, tgt_net, device="cpu"):
-    states, actions, rewards, dones, next_states = batch
+    states, actions, rewards, terminated, _, next_states = batch
 
     states_v = torch.tensor(np.array(states, copy=False)).to(device)
     next_states_v = torch.tensor(np.array(next_states, copy=False)).to(device)
     actions_v = torch.tensor(actions).to(device)
     rewards_v = torch.tensor(rewards).to(device)
-    done_mask = torch.BoolTensor(dones).to(device)
+    done_mask = torch.BoolTensor(terminated).to(device)
 
     state_action_values = net(states_v).gather(1, actions_v.unsqueeze(-1)).squeeze(-1)
     with torch.no_grad():
@@ -106,11 +109,13 @@ def calc_loss(batch, net, tgt_net, device="cpu"):
 
 
 if __name__ == "__main__":
+    from lib.utils import get_device
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda")
+    parser.add_argument("--cuda", default=True, action="store_true", help="Enable cuda")
     parser.add_argument("--env", default=DEFAULT_ENV_NAME, help="Name of the environment, default=" + DEFAULT_ENV_NAME)
     args = parser.parse_args()
-    device = torch.device("cuda" if args.cuda else "cpu")
+    device = torch.device(get_device(args.cuda))
 
     env = wrappers.make_env(args.env)
 
