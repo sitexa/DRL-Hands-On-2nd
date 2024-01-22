@@ -2,7 +2,7 @@
 import argparse
 import random
 
-import gym
+import gymnasium as gym
 import ptan
 import torch
 import torch.optim as optim

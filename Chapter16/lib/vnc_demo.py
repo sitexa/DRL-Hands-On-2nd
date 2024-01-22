@@ -5,7 +5,7 @@ import json
 import os.path
 import struct
 
-import gym
+import gymnasium as gym
 import numpy as np
 import universe
 from kaitaistruct import KaitaiStream

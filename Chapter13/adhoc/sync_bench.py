@@ -4,7 +4,7 @@ import sys
 import time
 import timeit
 
-import gym
+import gymnasium as gym
 import ptan
 
 sys.path.append(os.getcwd())

@@ -8,7 +8,7 @@ import argparse
 from types import SimpleNamespace
 from typing import List, Tuple
 
-import gym
+import gymnasium as gym
 import magent
 import ptan
 import ptan.ignite as ptan_ignite

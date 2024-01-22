@@ -5,7 +5,7 @@ import warnings
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
-import gym
+import gymnasium as gym
 import ptan
 import ptan.ignite as ptan_ignite
 import torch

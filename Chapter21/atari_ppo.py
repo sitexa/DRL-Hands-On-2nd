@@ -4,7 +4,7 @@ import random
 import time
 from types import SimpleNamespace
 
-import gym
+import gymnasium as gym
 import ptan
 import ptan.ignite as ptan_ignite
 import torch

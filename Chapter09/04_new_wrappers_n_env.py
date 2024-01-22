@@ -4,7 +4,7 @@ import random
 import warnings
 from datetime import datetime, timedelta
 
-import gym
+import gymnasium as gym
 import ptan
 import ptan.ignite as ptan_ignite
 import torch

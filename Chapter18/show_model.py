@@ -2,7 +2,7 @@
 import argparse
 import time
 
-import gym
+import gymnasium as gym
 import ptan
 import torch
 from lib import ddpg, microtaur

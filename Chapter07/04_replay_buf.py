@@ -1,6 +1,6 @@
 from typing import Any, List, Optional, Tuple
 
-import gym
+import gymnasium as gym
 import ptan
 
 

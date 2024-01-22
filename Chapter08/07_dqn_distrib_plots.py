@@ -3,7 +3,7 @@ import argparse
 import random
 from datetime import datetime, timedelta
 
-import gym
+import gymnasium as gym
 import lib.dqn_extra
 import numpy as np
 import ptan

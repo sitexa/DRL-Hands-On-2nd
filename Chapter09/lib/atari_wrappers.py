@@ -5,7 +5,7 @@ import numpy as np
 os.environ.setdefault("PATH", "")
 from collections import deque
 
-import gym
+import gymnasium as gym
 from gym import spaces
 
 USE_PIL = True

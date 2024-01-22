@@ -1,7 +1,7 @@
 import random
 from typing import List
 
-import gym
+import gymnasium as gym
 import numpy as np
 import ptan
 import torch

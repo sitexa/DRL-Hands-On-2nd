@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from types import SimpleNamespace
 from typing import Iterable, List, Tuple
 
-import gym
+import gymnasium as gym
 import numpy as np
 import ptan
 import ptan.ignite as ptan_ignite

@@ -1,7 +1,7 @@
 import logging
 from typing import Iterable, List, Optional
 
-import gym
+import gymnasium as gym
 import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnn_utils

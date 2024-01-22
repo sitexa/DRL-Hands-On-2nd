@@ -2,7 +2,7 @@
 import argparse
 import os
 
-import gym
+import gymnasium as gym
 import ptan
 import torch
 import torch.multiprocessing as mp

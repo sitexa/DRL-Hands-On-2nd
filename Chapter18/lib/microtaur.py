@@ -5,7 +5,7 @@ import re
 import tempfile
 from typing import List, Optional, Tuple
 
-import gym
+import gymnasium as gym
 import numpy as np
 import pybullet as p
 from gym.envs.registration import register as gym_register

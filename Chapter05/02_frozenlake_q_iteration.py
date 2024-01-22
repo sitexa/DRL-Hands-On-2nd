@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import collections
 
-import gym
+import gymnasium as gym
 from torch.utils.tensorboard import SummaryWriter
 
 ENV_NAME = "FrozenLake-v0"

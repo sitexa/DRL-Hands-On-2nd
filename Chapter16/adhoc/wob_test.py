@@ -4,7 +4,7 @@ import sys
 sys.path.append("..")
 import time
 
-import gym
+import gymnasium as gym
 
 # this import is not being used, but is required to make Universe envs available!
 import universe

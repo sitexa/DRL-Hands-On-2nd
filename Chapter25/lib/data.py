@@ -1,6 +1,6 @@
 from typing import Any, Callable, List, Optional, Tuple
 
-import gym
+import gymnasium as gym
 import magent
 import numpy as np
 from gym import spaces

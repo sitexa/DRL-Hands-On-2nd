@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import Optional
 
-import gym
+import gymnasium as gym
 import numpy as np
 import ptan
 import torch

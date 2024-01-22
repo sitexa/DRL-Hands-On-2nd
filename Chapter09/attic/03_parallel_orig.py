@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 
-import gym
+import gymnasium as gym
 import ptan
 import torch
 import torch.multiprocessing as mp

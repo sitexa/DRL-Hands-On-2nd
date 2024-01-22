@@ -4,7 +4,7 @@ import sys
 sys.path.append("..")
 import time
 
-import gym
+import gymnasium as gym
 import universe
 from lib import wob_vnc
 from PIL import Image

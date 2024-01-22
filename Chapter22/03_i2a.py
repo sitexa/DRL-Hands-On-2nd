@@ -3,7 +3,7 @@ import argparse
 import os
 import time
 
-import gym
+import gymnasium as gym
 import ptan
 import torch
 import torch.nn.functional as F

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from collections import namedtuple
 
-import gym
+import gymnasium as gym
 import numpy as np
 import torch
 import torch.nn as nn

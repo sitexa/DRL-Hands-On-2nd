@@ -2,7 +2,7 @@
 import argparse
 import collections
 
-import gym
+import gymnasium as gym
 import numpy as np
 import ptan
 import torch

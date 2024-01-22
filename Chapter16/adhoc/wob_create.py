@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import time
 
-import gym
+import gymnasium as gym
 import universe
 from PIL import Image
 

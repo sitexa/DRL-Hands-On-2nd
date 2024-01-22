@@ -1,7 +1,7 @@
 import enum
 
-import gym
 import gym.spaces
+import gymnasium as gym
 import numpy as np
 from gym.envs.registration import EnvSpec
 from gym.utils import seeding

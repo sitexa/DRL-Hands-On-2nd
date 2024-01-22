@@ -12,7 +12,7 @@ from lib import vnc_demo, wob_vnc
 DEFAULT_ENV = "wob.mini.ClickTest2-v0"
 
 
-import gym
+import gymnasium as gym
 import universe
 from universe.spaces import vnc_event
 

@@ -3,7 +3,7 @@ import argparse
 import random
 from datetime import datetime, timedelta
 
-import gym
+import gymnasium as gym
 import ptan
 import ptan.ignite as ptan_ignite
 import torch
