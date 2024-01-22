@@ -3,14 +3,13 @@ import argparse
 import random
 
 import cv2
-import gym
-import gym.spaces
+import gymnasium as gym
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.utils as vutils
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 log = gym.logger
 log.set_level(gym.logger.INFO)
@@ -116,12 +115,13 @@ class Generator(nn.Module):
 
 
 def iterate_batches(envs, batch_size=BATCH_SIZE):
-    batch = [e.reset() for e in envs]
+    batch = [e.reset()[0] for e in envs]
     env_gen = iter(lambda: random.choice(envs), None)
 
     while True:
         e = next(env_gen)
-        obs, reward, is_done, _ = e.step(e.action_space.sample())
+        obs, _, terminated, truncated, _ = e.step(e.action_space.sample())
+        done = terminated or truncated
         if np.mean(obs) > 0.01:
             batch.append(obs)
         if len(batch) == batch_size:
@@ -129,17 +129,19 @@ def iterate_batches(envs, batch_size=BATCH_SIZE):
             batch_np = np.array(batch, dtype=np.float32) * 2.0 / 255.0 - 1.0
             yield torch.tensor(batch_np)
             batch.clear()
-        if is_done:
+        if done:
             e.reset()
 
 
 if __name__ == "__main__":
+    from utils import get_device
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda computation")
+    parser.add_argument("--cuda", default=True, action="store_true", help="Enable cuda computation")
     args = parser.parse_args()
 
-    device = torch.device("cuda" if args.cuda else "cpu")
-    envs = [InputWrapper(gym.make(name)) for name in ("Breakout-v0", "AirRaid-v0", "Pong-v0")]
+    device = torch.device(get_device(args.cuda))
+    envs = [InputWrapper(gym.make(name)) for name in ("Breakout-v4", "AirRaid-v4", "Pong-v4")]
     input_shape = envs[0].observation_space.shape
 
     net_discr = Discriminator(input_shape=input_shape).to(device)
