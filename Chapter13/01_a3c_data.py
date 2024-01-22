@@ -12,7 +12,7 @@ import torch.nn.functional as F
 import torch.nn.utils as nn_utils
 import torch.optim as optim
 from lib import common
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 GAMMA = 0.99
 LEARNING_RATE = 0.001

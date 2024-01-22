@@ -5,7 +5,7 @@ import ptan
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 GAMMA = 0.99
 LEARNING_RATE = 0.01

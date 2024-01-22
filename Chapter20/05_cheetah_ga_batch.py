@@ -12,7 +12,7 @@ import pybullet_envs
 import torch
 import torch.multiprocessing as mp
 import torch.nn as nn
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 NOISE_STD = 0.005
 POPULATION_SIZE = 2000

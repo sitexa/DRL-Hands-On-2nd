@@ -11,7 +11,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.optim.lr_scheduler as scheduler
 from libcube import conf, cubes, model
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 log = logging.getLogger("train")
 

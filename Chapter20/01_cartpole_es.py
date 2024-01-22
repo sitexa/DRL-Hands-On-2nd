@@ -5,7 +5,7 @@ import gym
 import numpy as np
 import torch
 import torch.nn as nn
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 MAX_BATCH_EPISODES = 100
 MAX_BATCH_STEPS = 10000

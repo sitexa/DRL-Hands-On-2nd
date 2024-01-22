@@ -5,7 +5,7 @@ import gym
 import numpy as np
 import torch
 import torch.nn as nn
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 NOISE_STD = 0.01
 POPULATION_SIZE = 50

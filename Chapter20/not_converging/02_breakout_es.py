@@ -8,7 +8,7 @@ import numpy as np
 import ptan
 import torch
 import torch.nn as nn
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from torch import multiprocessing as mp
 from torch import optim
 from torch.autograd import Variable

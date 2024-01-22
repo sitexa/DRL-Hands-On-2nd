@@ -7,7 +7,7 @@ import ptan
 import torch
 import torch.optim as optim
 from lib import common
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 LEARNING_RATE = 1e-4
 TEST_EVERY_BATCH = 1000

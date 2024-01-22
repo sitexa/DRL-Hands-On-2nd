@@ -11,7 +11,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import ddpg, microtaur
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 TIME_LIMIT = 1000
 REPLAY_SIZE = 100000

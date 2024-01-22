@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import common, model
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 ENV_ID = "MinitaurBulletEnv-v0"
 GAMMA = 0.99

@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import common, i2a
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 LEARNING_RATE = 5e-4
 NUM_ENVS = 16

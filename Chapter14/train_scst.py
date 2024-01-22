@@ -10,7 +10,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from libbots import data, model, utils
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 SAVES_DIR = "saves"
 

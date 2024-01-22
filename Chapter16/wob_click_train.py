@@ -12,7 +12,7 @@ import torch.nn.utils as nn_utils
 import torch.optim as optim
 import universe
 from lib import common, model_vnc, vnc_demo, wob_vnc
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 REMOTES_COUNT = 8
 ENV_NAME = "wob.mini.ClickDialog-v0"

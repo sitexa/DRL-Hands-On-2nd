@@ -7,7 +7,7 @@ import torch
 import torch.multiprocessing as mp
 import torch.optim as optim
 from lib import common, dqn_model
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 PLAY_STEPS = 4
 

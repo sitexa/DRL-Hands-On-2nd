@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import calc_logprob, common, kfac, model, test_net
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 ENV_ID = "HalfCheetahBulletEnv-v0"
 GAMMA = 0.99

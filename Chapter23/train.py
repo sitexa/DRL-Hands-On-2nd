@@ -10,7 +10,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import game, mcts, model
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 PLAY_EPISODES = 1  # 25
 MCTS_SEARCHES = 10

@@ -9,9 +9,9 @@ import ptan
 import pybullet_envs
 import torch
 import torch.nn as nn
-from tensorboardX import SummaryWriter
 from torch import multiprocessing as mp
 from torch import optim
+from torch.utils.tensorboard import SummaryWriter
 
 NOISE_STD = 0.05
 LEARNING_RATE = 0.01

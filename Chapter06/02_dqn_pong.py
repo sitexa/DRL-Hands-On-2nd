@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from lib import dqn_model, wrappers
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 DEFAULT_ENV_NAME = "PongNoFrameskip-v4"
 MEAN_REWARD_BOUND = 19

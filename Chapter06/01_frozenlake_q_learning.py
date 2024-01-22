@@ -2,7 +2,7 @@
 import collections
 
 import gym
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 ENV_NAME = "FrozenLake-v0"
 GAMMA = 0.9

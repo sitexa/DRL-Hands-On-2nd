@@ -2,7 +2,7 @@
 import collections
 
 import gym
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 ENV_NAME = "FrozenLake-v0"
 # ENV_NAME = "FrozenLake8x8-v0"      # uncomment for larger version
