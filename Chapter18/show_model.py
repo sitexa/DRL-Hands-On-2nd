@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+import argparse
+import time
+
 import gym
 import ptan
-import time
-import argparse
 import torch
-
-from lib import microtaur, ddpg
+from lib import ddpg, microtaur
 
 OBS_HISTORY_STEPS = 4
 
@@ -21,8 +21,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-r", "--rotate", type=int, help="If given, rotate given leg 0..3 back and forth")
     parser.add_argument("-m", "--model", help="Optional model file to load")
-    parser.add_argument("--zero-yaw", default=False, action='store_true', help="Pass zero yaw to observation")
-    parser.add_argument("-v", "--value", default=0.0, type=float, help="Value to be assigned as action on all legs, default=0.0")
+    parser.add_argument("--zero-yaw", default=False, action="store_true", help="Pass zero yaw to observation")
+    parser.add_argument(
+        "-v", "--value", default=0.0, type=float, help="Value to be assigned as action on all legs, default=0.0"
+    )
     args = parser.parse_args()
 
     microtaur.register()

@@ -18,4 +18,3 @@ set -x
 ../plot.py -i d4-loss-critic.csv -o 10-02-loss-critic.svg -x Steps -y "Critic loss"
 ../plot.py -i d4-test-reward.csv -o 11-01-test-reward.svg -x Steps -y "Test reward"
 ../plot.py -i d4-test-steps.csv -o 11-02-test-steps.svg -x Steps -y "Test episode steps"
-

@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # This module requires python-telegram-bot
-import os
-import sys
+import argparse
+import configparser
+import datetime
 import glob
 import json
-import time
-import datetime
-import random
 import logging
-import numpy as np
-import configparser
-import argparse
+import os
+import random
+import sys
+import time
 
-from lib import game, model, mcts
+import numpy as np
+from lib import game, mcts, model
 
 MCTS_SEARCHES = 20
 MCTS_BATCH_SIZE = 4
@@ -72,7 +72,7 @@ class Session:
     def render(self):
         l = game.render(self.state)
         l = "\n".join(l)
-        l = l.replace("0", 'O').replace("1", "X")
+        l = l.replace("0", "O").replace("1", "X")
         board = "0123456\n-------\n" + l + "\n-------\n0123456"
         extra = ""
         if self.value is not None:
@@ -97,13 +97,13 @@ class PlayerBot:
 
     def _read_leaderboard(self, log_file):
         if not os.path.exists(log_file):
-            return 
-        with open(log_file, 'rt', encoding='utf-8') as fd:
+            return
+        with open(log_file, "rt", encoding="utf-8") as fd:
             for l in fd:
                 data = json.loads(l)
-                bot_name = os.path.basename(data['model_file'])
-                user_name = data['player_id'].split(':')[0]
-                bot_score = data['bot_score']
+                bot_name = os.path.basename(data["model_file"])
+                user_name = data["player_id"].split(":")[0]
+                bot_score = data["bot_score"]
                 self._update_leaderboard(bot_score, bot_name, user_name)
 
     def _update_leaderboard(self, bot_score, bot_name, user_name):
@@ -118,8 +118,7 @@ class PlayerBot:
             game.update_counts(self.leaderboard, user_name, (0, 0, 1))
 
     def _save_log(self, session, bot_score):
-        self._update_leaderboard(bot_score, os.path.basename(session.model_file),
-                                 session.player_id.split(':')[0])
+        self._update_leaderboard(bot_score, os.path.basename(session.model_file), session.player_id.split(":")[0])
         data = {
             "ts": time.time(),
             "time": datetime.datetime.utcnow().isoformat(),
@@ -128,15 +127,18 @@ class PlayerBot:
             "player_id": session.player_id,
             "player_moves_first": session.player_moves_first,
             "moves": session.moves,
-            "state": session.state
+            "state": session.state,
         }
-        with open(self.log_file, "a+t", encoding='utf-8') as f:
-            f.write(json.dumps(data, sort_keys=True) + '\n')
+        with open(self.log_file, "a+t", encoding="utf-8") as f:
+            f.write(json.dumps(data, sort_keys=True) + "\n")
 
     def command_help(self, bot, update):
-        bot.send_message(chat_id=update.message.chat_id, parse_mode="HTML", disable_web_page_preview=True,
-                         text="""
-This a <a href="https://en.wikipedia.org/wiki/Connect_Four">4-in-a-row</a> game bot trained with AlphaGo Zero method for the <a href="https://www.packtpub.com/big-data-and-business-intelligence/practical-deep-reinforcement-learning">Practical Deep Reinforcement Learning</a> book. 
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            parse_mode="HTML",
+            disable_web_page_preview=True,
+            text="""
+This a <a href="https://en.wikipedia.org/wiki/Connect_Four">4-in-a-row</a> game bot trained with AlphaGo Zero method for the <a href="https://www.packtpub.com/big-data-and-business-intelligence/practical-deep-reinforcement-learning">Practical Deep Reinforcement Learning</a> book.
 
 <b>Welcome!</b>
 
@@ -146,8 +148,8 @@ This bot understands the following commands:
 <b>/top</b> show leaderboard
 
 During the game, your moves are numbers of columns to drop the disk.
-""")
-
+""",
+        )
 
     def command_list(self, bot, update):
         if len(self.models) == 0:
@@ -180,7 +182,10 @@ During the game, your moves are numbers of columns to drop the disk.
         session = Session(self.models[model_id], player_moves, player_id)
         self.sessions[chat_id] = session
         if player_moves:
-            bot.send_message(chat_id=chat_id, text="Your move is first (you're playing with O), please give the column to put your checker - single number from 0 to 6")
+            bot.send_message(
+                chat_id=chat_id,
+                text="Your move is first (you're playing with O), please give the column to put your checker - single number from 0 to 6",
+            )
         else:
             bot.send_message(chat_id=chat_id, text="The first move is mine (I'm playing with X), moving...")
             session.move_bot()
@@ -190,17 +195,22 @@ During the game, your moves are numbers of columns to drop the disk.
         chat_id = update.message.chat_id
 
         if chat_id not in self.sessions:
-            bot.send_message(chat_id=chat_id, text="You have no game in progress. Start it with <b>/play MODEL_ID</b> "
-                                                   "(or use <b>/help</b> to see the list of commands)",
-                             parse_mode='HTML')
+            bot.send_message(
+                chat_id=chat_id,
+                text="You have no game in progress. Start it with <b>/play MODEL_ID</b> "
+                "(or use <b>/help</b> to see the list of commands)",
+                parse_mode="HTML",
+            )
             return
         session = self.sessions[chat_id]
 
         try:
             move_col = int(update.message.text)
         except ValueError:
-            bot.send_message(chat_id=chat_id, text="I don't understand. In play mode you can give a number "
-                                                   "from 0 to 6 to specify your move.")
+            bot.send_message(
+                chat_id=chat_id,
+                text="I don't understand. In play mode you can give a number " "from 0 to 6 to specify your move.",
+            )
             return
 
         if move_col < 0 or move_col > game.GAME_COLS:
@@ -254,8 +264,9 @@ During the game, your moves are numbers of columns to drop the disk.
 if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)-15s %(levelname)s %(message)s", level=logging.INFO)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default=CONFIG_DEFAULT,
-                        help="Configuration file for the bot, default=" + CONFIG_DEFAULT)
+    parser.add_argument(
+        "--config", default=CONFIG_DEFAULT, help="Configuration file for the bot, default=" + CONFIG_DEFAULT
+    )
     parser.add_argument("-m", "--models", required=True, help="Directory name with models to serve")
     parser.add_argument("-l", "--log", required=True, help="Log name to keep the games and leaderboard")
     prog_args = parser.parse_args()
@@ -267,12 +278,12 @@ if __name__ == "__main__":
 
     player_bot = PlayerBot(prog_args.models, prog_args.log)
 
-    updater = telegram.ext.Updater(conf['telegram']['api'])
-    updater.dispatcher.add_handler(telegram.ext.CommandHandler('help', player_bot.command_help))
-    updater.dispatcher.add_handler(telegram.ext.CommandHandler('list', player_bot.command_list))
-    updater.dispatcher.add_handler(telegram.ext.CommandHandler('top', player_bot.command_top))
-    updater.dispatcher.add_handler(telegram.ext.CommandHandler('play', player_bot.command_play, pass_args=True))
-    updater.dispatcher.add_handler(telegram.ext.CommandHandler('refresh', player_bot.command_refresh))
+    updater = telegram.ext.Updater(conf["telegram"]["api"])
+    updater.dispatcher.add_handler(telegram.ext.CommandHandler("help", player_bot.command_help))
+    updater.dispatcher.add_handler(telegram.ext.CommandHandler("list", player_bot.command_list))
+    updater.dispatcher.add_handler(telegram.ext.CommandHandler("top", player_bot.command_top))
+    updater.dispatcher.add_handler(telegram.ext.CommandHandler("play", player_bot.command_play, pass_args=True))
+    updater.dispatcher.add_handler(telegram.ext.CommandHandler("refresh", player_bot.command_refresh))
     updater.dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, player_bot.text))
     updater.dispatcher.add_error_handler(player_bot.error)
 

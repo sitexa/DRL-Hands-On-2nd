@@ -1,7 +1,6 @@
 import gym
-import ptan
 import numpy as np
-
+import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,13 +22,10 @@ IMG_SHAPE = (FRAMES_COUNT, 84, 84)
 
 def make_env(test=False, clip=True):
     if test:
-        args = {'reward_clipping': False,
-                'episodic_life': False}
+        args = {"reward_clipping": False, "episodic_life": False}
     else:
-        args = {'reward_clipping': clip}
-    return ptan.common.wrappers.wrap_dqn(gym.make("BreakoutNoFrameskip-v4"),
-                                         stack_frames=FRAMES_COUNT,
-                                         **args)
+        args = {"reward_clipping": clip}
+    return ptan.common.wrappers.wrap_dqn(gym.make("BreakoutNoFrameskip-v4"), stack_frames=FRAMES_COUNT, **args)
 
 
 def set_seed(seed, envs=None, cuda=False):
@@ -58,10 +54,7 @@ class AtariA2C(nn.Module):
 
         conv_out_size = self._get_conv_out(input_shape)
 
-        self.fc = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
-            nn.ReLU()
-        )
+        self.fc = nn.Sequential(nn.Linear(conv_out_size, 512), nn.ReLU())
         self.policy = nn.Linear(512, n_actions)
         self.value = nn.Linear(512, 1)
 
@@ -76,12 +69,11 @@ class AtariA2C(nn.Module):
         return self.policy(fc_out), self.value(fc_out)
 
 
-
 def discount_with_dones(rewards, dones, gamma):
     discounted = []
     r = 0
     for reward, done in zip(rewards[::-1], dones[::-1]):
-        r = reward + gamma*r*(1.-done)
+        r = reward + gamma * r * (1.0 - done)
         discounted.append(r)
     return discounted[::-1]
 
@@ -144,8 +136,9 @@ def iterate_batches(envs, net, device="cpu"):
         out_mb_actions = mb_actions.flatten()
         out_mb_values = mb_values.flatten()
         out_mb_probs = mb_probs.flatten()
-        yield out_mb_obs, out_mb_rewards, out_mb_actions, out_mb_values, out_mb_probs, \
-              np.array(done_rewards), np.array(done_steps)
+        yield out_mb_obs, out_mb_rewards, out_mb_actions, out_mb_values, out_mb_probs, np.array(done_rewards), np.array(
+            done_steps
+        )
 
 
 def train_a2c(net, mb_obs, mb_rewards, mb_actions, mb_values, optimizer, tb_tracker, step_idx, device="cpu"):

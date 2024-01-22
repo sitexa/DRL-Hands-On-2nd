@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 import argparse
+
 import gym
-from gym import wrappers
-import pybullet_envs
-
-from lib import model, kfac
-from PIL import Image
-
 import numpy as np
+import pybullet_envs
 import torch
-
+from gym import wrappers
+from lib import kfac, model
+from PIL import Image
 
 ENV_ID = "HalfCheetahBulletEnv-v0"
 
@@ -19,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--env", default=ENV_ID, help="Environment name to use, default=" + ENV_ID)
     parser.add_argument("-r", "--record", help="If specified, sets the recording dir, default=Disabled")
     parser.add_argument("-s", "--save", type=int, help="If specified, save every N-th step as an image")
-    parser.add_argument("--acktr", default=False, action='store_true', help="Enable Acktr-specific tweaks")
+    parser.add_argument("--acktr", default=False, action="store_true", help="Enable Acktr-specific tweaks")
     args = parser.parse_args()
 
     env = gym.make(args.env)
@@ -39,7 +37,7 @@ if __name__ == "__main__":
         mu_v = net(obs_v)
         action = mu_v.squeeze(dim=0).data.numpy()
         action = np.clip(action, -1, 1)
-        if np.isscalar(action): 
+        if np.isscalar(action):
             action = [action]
         obs, reward, done, _ = env.step(action)
         total_reward += reward
@@ -47,7 +45,7 @@ if __name__ == "__main__":
         if done:
             break
         if args.save is not None and total_steps % args.save == 0:
-            o = env.render('rgb_array')
+            o = env.render("rgb_array")
             img = Image.fromarray(o)
             img.save("img_%05d.png" % total_steps)
     print("In %d steps we got %.3f reward" % (total_steps, total_reward))

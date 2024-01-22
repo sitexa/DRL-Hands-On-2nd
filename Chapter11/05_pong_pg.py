@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-import gym
-import ptan
-import numpy as np
 import argparse
 import collections
-from tensorboardX import SummaryWriter
 
+import gym
+import numpy as np
+import ptan
 import torch
 import torch.nn.functional as F
 import torch.nn.utils as nn_utils
 import torch.optim as optim
-
 from lib import common
+from tensorboardX import SummaryWriter
 
 GAMMA = 0.99
 LEARNING_RATE = 0.0001
@@ -50,7 +49,7 @@ class MeanBuffer:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda")
-    parser.add_argument("-n", '--name', required=True, help="Name of the run")
+    parser.add_argument("-n", "--name", required=True, help="Name of the run")
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
 
@@ -125,7 +124,7 @@ if __name__ == "__main__":
             grad_count = 0
             for p in net.parameters():
                 grad_max = max(grad_max, p.grad.abs().max().item())
-                grad_means += (p.grad ** 2).mean().sqrt().item()
+                grad_means += (p.grad**2).mean().sqrt().item()
                 grad_count += 1
 
             writer.add_scalar("baseline", baseline, step_idx)

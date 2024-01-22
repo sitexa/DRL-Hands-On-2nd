@@ -17,10 +17,8 @@ DELTA_Z = (Vmax - Vmin) / (N_ATOMS - 1)
 
 
 class NoisyLinear(nn.Linear):
-    def __init__(self, in_features, out_features,
-                 sigma_init=0.017, bias=True):
-        super(NoisyLinear, self).__init__(
-            in_features, out_features, bias=bias)
+    def __init__(self, in_features, out_features, sigma_init=0.017, bias=True):
+        super(NoisyLinear, self).__init__(in_features, out_features, bias=bias)
         w = torch.full((out_features, in_features), sigma_init)
         self.sigma_weight = nn.Parameter(w)
         z = torch.zeros(out_features, in_features)
@@ -42,10 +40,8 @@ class NoisyLinear(nn.Linear):
             return super(NoisyLinear, self).forward(input)
         bias = self.bias
         if bias is not None:
-            bias = bias + self.sigma_bias * \
-                   self.epsilon_bias.data
-        v = self.sigma_weight * self.epsilon_weight.data + \
-            self.weight
+            bias = bias + self.sigma_bias * self.epsilon_bias.data
+        v = self.sigma_weight * self.epsilon_weight.data + self.weight
         return F.linear(input, v, bias)
 
     def sample_noise(self):
@@ -60,10 +56,9 @@ class NoisyFactorizedLinear(nn.Linear):
 
     N.B. nn.Linear already initializes weight and bias to
     """
-    def __init__(self, in_features, out_features,
-                 sigma_zero=0.4, bias=True):
-        super(NoisyFactorizedLinear, self).__init__(
-            in_features, out_features, bias=bias)
+
+    def __init__(self, in_features, out_features, sigma_zero=0.4, bias=True):
+        super(NoisyFactorizedLinear, self).__init__(in_features, out_features, bias=bias)
         sigma_init = sigma_zero / math.sqrt(in_features)
         w = torch.full((out_features, in_features), sigma_init)
         self.sigma_weight = nn.Parameter(w)
@@ -82,8 +77,7 @@ class NoisyFactorizedLinear(nn.Linear):
         self.epsilon_input.normal_()
         self.epsilon_output.normal_()
 
-        func = lambda x: torch.sign(x) * \
-                         torch.sqrt(torch.abs(x))
+        func = lambda x: torch.sign(x) * torch.sqrt(torch.abs(x))
         eps_in = func(self.epsilon_input.data)
         eps_out = func(self.epsilon_output.data)
 
@@ -105,24 +99,13 @@ class NoisyDQN(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.noisy_layers = [
-            NoisyLinear(conv_out_size, 256),
-            NoisyLinear(256, n_actions)
-        ]
-        self.fc_adv = nn.Sequential(
-            self.noisy_layers[0],
-            nn.ReLU(),
-            self.noisy_layers[1]
-        )
-        self.fc_val = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
+        self.noisy_layers = [NoisyLinear(conv_out_size, 256), NoisyLinear(256, n_actions)]
+        self.fc_adv = nn.Sequential(self.noisy_layers[0], nn.ReLU(), self.noisy_layers[1])
+        self.fc_val = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -139,7 +122,7 @@ class NoisyDQN(nn.Module):
 
     def noisy_layers_sigma_snr(self):
         return [
-            ((layer.weight ** 2).mean().sqrt() / (layer.sigma_weight ** 2).mean().sqrt()).item()
+            ((layer.weight**2).mean().sqrt() / (layer.sigma_weight**2).mean().sqrt()).item()
             for layer in self.noisy_layers
         ]
 
@@ -148,30 +131,22 @@ class BaselineDQN(nn.Module):
     """
     Dueling net
     """
+
     def __init__(self, input_shape, n_actions):
         super(BaselineDQN, self).__init__()
 
         self.conv = nn.Sequential(
-            nn.Conv2d(input_shape[0], 32,
-                      kernel_size=8, stride=4),
+            nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.fc_adv = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, n_actions)
-        )
-        self.fc_val = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
+        self.fc_adv = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, n_actions))
+        self.fc_val = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -209,11 +184,7 @@ class MountainCarNoisyNetDQN(nn.Module):
             NoisyLinear(hid_size, n_actions),
         ]
 
-        self.net = nn.Sequential(
-            nn.Linear(obs_size, hid_size),
-            nn.ReLU(),
-            self.noisy_layers[0]
-        )
+        self.net = nn.Sequential(nn.Linear(obs_size, hid_size), nn.ReLU(), self.noisy_layers[0])
 
     def forward(self, x):
         return self.net(x)

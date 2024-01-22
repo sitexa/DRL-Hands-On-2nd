@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-import sys
-import gym
-import pybullet_envs
 import argparse
-import itertools
 import collections
 import copy
+import itertools
+import sys
 import time
+
+import gym
 import numpy as np
-
+import pybullet_envs
 import torch
-import torch.nn as nn
 import torch.multiprocessing as mp
-
+import torch.nn as nn
 from tensorboardX import SummaryWriter
-
 
 NOISE_STD = 0.005
 POPULATION_SIZE = 2000
@@ -28,8 +26,8 @@ class MultiNoiseLinear(nn.Linear):
     def set_noise_dim(self, dim):
         assert isinstance(dim, int)
         assert dim > 0
-        self.register_buffer('noise', torch.FloatTensor(dim, self.out_features, self.in_features))
-        self.register_buffer('noise_bias', torch.FloatTensor(dim, self.out_features))
+        self.register_buffer("noise", torch.FloatTensor(dim, self.out_features, self.in_features))
+        self.register_buffer("noise_bias", torch.FloatTensor(dim, self.out_features))
 
     def sample_noise_row(self, row):
         # sample noise for our params
@@ -140,7 +138,7 @@ def build_net(env, seeds):
     return net
 
 
-OutputItem = collections.namedtuple('OutputItem', field_names=['seeds', 'reward', 'steps'])
+OutputItem = collections.namedtuple("OutputItem", field_names=["seeds", "reward", "steps"])
 
 
 def worker_func(input_queue, output_queue, device="cpu"):
@@ -173,9 +171,9 @@ def worker_func(input_queue, output_queue, device="cpu"):
 
 
 if __name__ == "__main__":
-    mp.set_start_method('spawn')
+    mp.set_start_method("spawn")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cuda", default=False, action='store_true')
+    parser.add_argument("--cuda", default=False, action="store_true")
     args = parser.parse_args()
     writer = SummaryWriter(comment="-cheetah-ga-batch")
     device = "cuda" if args.cuda else "cpu"
@@ -215,8 +213,10 @@ if __name__ == "__main__":
         writer.add_scalar("gen_seconds", time.time() - t_start, gen_idx)
         speed = batch_steps / (time.time() - t_start)
         writer.add_scalar("speed", speed, gen_idx)
-        print("%d: reward_mean=%.2f, reward_max=%.2f, reward_std=%.2f, speed=%.2f f/s" % (
-            gen_idx, reward_mean, reward_max, reward_std, speed))
+        print(
+            "%d: reward_mean=%.2f, reward_max=%.2f, reward_std=%.2f, speed=%.2f f/s"
+            % (gen_idx, reward_mean, reward_max, reward_std, speed)
+        )
 
         elite = population[0]
         for worker_queue in input_queues:

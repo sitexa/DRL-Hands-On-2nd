@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-import gym
-import ptan
 import argparse
-import numpy as np
-from tensorboardX import SummaryWriter
 
+import gym
+import numpy as np
+import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from tensorboardX import SummaryWriter
 
 GAMMA = 0.99
 LEARNING_RATE = 0.001
@@ -22,11 +22,7 @@ class PGN(nn.Module):
     def __init__(self, input_size, n_actions):
         super(PGN, self).__init__()
 
-        self.net = nn.Sequential(
-            nn.Linear(input_size, 128),
-            nn.ReLU(),
-            nn.Linear(128, n_actions)
-        )
+        self.net = nn.Sequential(nn.Linear(input_size, 128), nn.ReLU(), nn.Linear(128, n_actions))
 
     def forward(self, x):
         return self.net(x)
@@ -34,7 +30,7 @@ class PGN(nn.Module):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--baseline", default=False, action='store_true', help="Enable mean baseline")
+    parser.add_argument("--baseline", default=False, action="store_true", help="Enable mean baseline")
     args = parser.parse_args()
 
     env = gym.make("CartPole-v0")
@@ -43,8 +39,7 @@ if __name__ == "__main__":
     net = PGN(env.observation_space.shape[0], env.action_space.n)
     print(net)
 
-    agent = ptan.agent.PolicyAgent(net, preprocessor=ptan.agent.float32_preprocessor,
-                                   apply_softmax=True)
+    agent = ptan.agent.PolicyAgent(net, preprocessor=ptan.agent.float32_preprocessor, apply_softmax=True)
     exp_source = ptan.experience.ExperienceSourceFirstLast(env, agent, gamma=GAMMA, steps_count=REWARD_STEPS)
 
     optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
@@ -75,8 +70,7 @@ if __name__ == "__main__":
             reward = new_rewards[0]
             total_rewards.append(reward)
             mean_rewards = float(np.mean(total_rewards[-100:]))
-            print("%d: reward: %6.2f, mean_100: %6.2f, episodes: %d" % (
-                step_idx, reward, mean_rewards, done_episodes))
+            print("%d: reward: %6.2f, mean_100: %6.2f, episodes: %d" % (step_idx, reward, mean_rewards, done_episodes))
             writer.add_scalar("reward", reward, step_idx)
             writer.add_scalar("reward_100", mean_rewards, step_idx)
             writer.add_scalar("episodes", done_episodes, step_idx)
@@ -99,9 +93,7 @@ if __name__ == "__main__":
         loss_policy_v = -log_prob_actions_v.mean()
 
         loss_policy_v.backward(retain_graph=True)
-        grads = np.concatenate([p.grad.data.numpy().flatten()
-                                for p in net.parameters()
-                                if p.grad is not None])
+        grads = np.concatenate([p.grad.data.numpy().flatten() for p in net.parameters() if p.grad is not None])
 
         prob_v = F.softmax(logits_v, dim=1)
         entropy_v = -(prob_v * log_prob_v).sum(dim=1).mean()

@@ -1,25 +1,24 @@
-import io
-import glob
-import json
-import struct
-import os.path
 import collections
+import glob
+import io
+import json
+import os.path
+import struct
+
 import gym
-import universe
-
 import numpy as np
-
+import universe
+from kaitaistruct import KaitaiStream
 from universe.spaces import vnc_event
 from universe.vncdriver import fbs_reader, server_messages, vnc_client
-from kaitaistruct import KaitaiStream
 
-from .ksy import rfp_client, rfp_server
 from . import wob_vnc
+from .ksy import rfp_client, rfp_server
 
 
 def iterate_demo_dirs(dir_name, env_name):
     for env_file_name in glob.glob(os.path.join(dir_name, "**", "env_id.txt"), recursive=True):
-        with open(env_file_name, "r", encoding='utf-8') as fd:
+        with open(env_file_name, "r", encoding="utf-8") as fd:
             dir_env_name = fd.readline()
             if dir_env_name != env_name:
                 continue
@@ -42,26 +41,33 @@ def load_demo(dir_name, env_name, read_text=False):
         return env._action_to_discrete(pointer_event)
 
     for demo_dir in iterate_demo_dirs(dir_name, env_name):
-        client_header, client_messages = \
-            read_fbp_file(os.path.join(demo_dir, "client.fbs"),
-                          rfp_client.RfpClient, rfp_client.RfpClient.Header,
-                          rfp_client.RfpClient.Message)
+        client_header, client_messages = read_fbp_file(
+            os.path.join(demo_dir, "client.fbs"),
+            rfp_client.RfpClient,
+            rfp_client.RfpClient.Header,
+            rfp_client.RfpClient.Message,
+        )
 
-        srv_header, srv_messages = \
-            read_fbp_file(os.path.join(demo_dir, "server.fbs"),
-                          rfp_server.RfpServer, rfp_server.RfpServer.Header,
-                          rfp_server.RfpServer.Message)
+        srv_header, srv_messages = read_fbp_file(
+            os.path.join(demo_dir, "server.fbs"),
+            rfp_server.RfpServer,
+            rfp_server.RfpServer.Header,
+            rfp_server.RfpServer.Message,
+        )
 
         if read_text:
             text_entries = read_text_entries(os.path.join(demo_dir, "rewards.demo"))
         else:
             text_entries = None
 
-
-        samples = extract_samples(client_header, client_messages,
-                                  srv_header, srv_messages,
-                                  text_entries=text_entries,
-                                  mouse_to_action=mouse_to_action)
+        samples = extract_samples(
+            client_header,
+            client_messages,
+            srv_header,
+            srv_messages,
+            text_entries=text_entries,
+            mouse_to_action=mouse_to_action,
+        )
         result.extend(samples)
 
     return result
@@ -69,15 +75,15 @@ def load_demo(dir_name, env_name, read_text=False):
 
 def read_text_entries(file_name):
     result = []
-    with open(file_name, "rt", encoding='utf-8') as fd:
+    with open(file_name, "rt", encoding="utf-8") as fd:
         for l in fd:
             data = json.loads(l)
             if "message" not in data:
                 continue
-            if data["message"]['method'] != "v0.env.text":
+            if data["message"]["method"] != "v0.env.text":
                 continue
-            txt = data['message']['body']['text'].get('instruction', '')
-            result.append((data['timestamp'], txt))
+            txt = data["message"]["body"]["text"].get("instruction", "")
+            result.append((data["timestamp"], txt))
     result.sort(key=lambda v: v[0])
     return result
 
@@ -114,16 +120,25 @@ class Client:
     def __init__(self, server_header):
         assert isinstance(server_header, rfp_server.RfpServer.Header)
         srv_init = server_header.server_init
-        pixel_format_block = struct.pack("!BBBBHHHBBBxxx", srv_init.pixel_format.bpp,
-                                         srv_init.pixel_format.depth, srv_init.pixel_format.big_endian,
-                                         srv_init.pixel_format.true_color, srv_init.pixel_format.red_max,
-                                         srv_init.pixel_format.green_max, srv_init.pixel_format.blue_max,
-                                         srv_init.pixel_format.red_shift, srv_init.pixel_format.green_shift,
-                                         srv_init.pixel_format.blue_shift)
-        self.framebuffer = vnc_client.Framebuffer(server_header.server_init.width,
-                                                  server_header.server_init.height,
-                                                  pixel_format_block,
-                                                  bytes(server_header.server_init.name, encoding='utf-8'))
+        pixel_format_block = struct.pack(
+            "!BBBBHHHBBBxxx",
+            srv_init.pixel_format.bpp,
+            srv_init.pixel_format.depth,
+            srv_init.pixel_format.big_endian,
+            srv_init.pixel_format.true_color,
+            srv_init.pixel_format.red_max,
+            srv_init.pixel_format.green_max,
+            srv_init.pixel_format.blue_max,
+            srv_init.pixel_format.red_shift,
+            srv_init.pixel_format.green_shift,
+            srv_init.pixel_format.blue_shift,
+        )
+        self.framebuffer = vnc_client.Framebuffer(
+            server_header.server_init.width,
+            server_header.server_init.height,
+            pixel_format_block,
+            bytes(server_header.server_init.name, encoding="utf-8"),
+        )
 
     def decode_rectangle(self, msg_rect):
         """
@@ -134,14 +149,22 @@ class Client:
         assert isinstance(msg_rect, rfp_server.RfpServer.Rectangle)
         if msg_rect.header.encoding == rfp_server.RfpServer.Encoding.raw:
             return server_messages.RAWEncoding.parse_rectangle(
-                self, msg_rect.header.pos_x, msg_rect.header.pos_y,
-                msg_rect.header.width, msg_rect.header.height,
-                msg_rect.body.data)
+                self,
+                msg_rect.header.pos_x,
+                msg_rect.header.pos_y,
+                msg_rect.header.width,
+                msg_rect.header.height,
+                msg_rect.body.data,
+            )
         elif msg_rect.header.encoding == rfp_server.RfpServer.Encoding.cursor:
             return server_messages.PseudoCursorEncoding.parse_rectangle(
-                self, msg_rect.header.pos_x, msg_rect.header.pos_y,
-                msg_rect.header.width, msg_rect.header.height,
-                msg_rect.body.data)
+                self,
+                msg_rect.header.pos_x,
+                msg_rect.header.pos_y,
+                msg_rect.header.width,
+                msg_rect.header.height,
+                msg_rect.body.data,
+            )
         else:
             print("Warning! Unsupported encoding requested: %s" % msg_rect.header.encoding)
 
@@ -167,10 +190,9 @@ def iterate_earlier(queue, boundary_ts):
         yield item
 
 
-
-def extract_samples(client_header, client_messages, srv_header, srv_messages,
-                    text_entries=None,
-                    mouse_to_action=default_mouse_to_action):
+def extract_samples(
+    client_header, client_messages, srv_header, srv_messages, text_entries=None, mouse_to_action=default_mouse_to_action
+):
     samples = []
     client = Client(srv_header)
     numpy_screen = client.framebuffer.numpy_screen
@@ -199,7 +221,7 @@ def extract_samples(client_header, client_messages, srv_header, srv_messages,
                 numpy_screen.flip()
 
         # pass client action to framebuffer to track cursor position
-        if msg.message_type == 5:   # TODO: enum
+        if msg.message_type == 5:  # TODO: enum
             event = vnc_event.PointerEvent(msg.message_body.pos_x, msg.message_body.pos_y, msg.message_body.button_mask)
             numpy_screen.flip()
             numpy_screen.apply_action(event)
@@ -217,5 +239,5 @@ def extract_samples(client_header, client_messages, srv_header, srv_messages,
 
 
 def crop_image(buffer):
-    img = buffer[wob_vnc.Y_OFS:wob_vnc.Y_OFS+wob_vnc.HEIGHT, wob_vnc.X_OFS:wob_vnc.X_OFS+wob_vnc.WIDTH, :]
+    img = buffer[wob_vnc.Y_OFS : wob_vnc.Y_OFS + wob_vnc.HEIGHT, wob_vnc.X_OFS : wob_vnc.X_OFS + wob_vnc.WIDTH, :]
     return np.transpose(img, (2, 0, 1))

@@ -1,28 +1,25 @@
 #!/usr/bin/env python3
-import os
-import time
-import ptan
-import random
 import argparse
 import collections
+import os
+import random
+import time
 
-from lib import game, model, mcts
-
+import ptan
+import torch
+import torch.nn.functional as F
+import torch.optim as optim
+from lib import game, mcts, model
 from tensorboardX import SummaryWriter
 
-import torch
-import torch.optim as optim
-import torch.nn.functional as F
-
-
-PLAY_EPISODES = 1  #25
+PLAY_EPISODES = 1  # 25
 MCTS_SEARCHES = 10
 MCTS_BATCH_SIZE = 8
-REPLAY_BUFFER = 5000 # 30000
+REPLAY_BUFFER = 5000  # 30000
 LEARNING_RATE = 0.1
 BATCH_SIZE = 256
 TRAIN_ROUNDS = 10
-MIN_REPLAY_TO_TRAIN = 2000 #10000
+MIN_REPLAY_TO_TRAIN = 2000  # 10000
 
 BEST_NET_WIN_RATIO = 0.60
 
@@ -36,9 +33,16 @@ def evaluate(net1, net2, rounds, device="cpu"):
     mcts_stores = [mcts.MCTS(), mcts.MCTS()]
 
     for r_idx in range(rounds):
-        r, _ = model.play_game(mcts_stores=mcts_stores, replay_buffer=None, net1=net1, net2=net2,
-                               steps_before_tau_0=0, mcts_searches=20, mcts_batch_size=16,
-                               device=device)
+        r, _ = model.play_game(
+            mcts_stores=mcts_stores,
+            replay_buffer=None,
+            net1=net1,
+            net2=net2,
+            steps_before_tau_0=0,
+            mcts_searches=20,
+            mcts_batch_size=16,
+            device=device,
+        )
         if r < -0.5:
             n2_win += 1
         elif r > 0.5:
@@ -74,9 +78,16 @@ if __name__ == "__main__":
             prev_nodes = len(mcts_store)
             game_steps = 0
             for _ in range(PLAY_EPISODES):
-                _, steps = model.play_game(mcts_store, replay_buffer, best_net.target_model, best_net.target_model,
-                                           steps_before_tau_0=STEPS_BEFORE_TAU_0, mcts_searches=MCTS_SEARCHES,
-                                           mcts_batch_size=MCTS_BATCH_SIZE, device=device)
+                _, steps = model.play_game(
+                    mcts_store,
+                    replay_buffer,
+                    best_net.target_model,
+                    best_net.target_model,
+                    steps_before_tau_0=STEPS_BEFORE_TAU_0,
+                    mcts_searches=MCTS_SEARCHES,
+                    mcts_batch_size=MCTS_BATCH_SIZE,
+                    device=device,
+                )
                 game_steps += steps
             game_nodes = len(mcts_store) - prev_nodes
             dt = time.time() - t
@@ -84,8 +95,10 @@ if __name__ == "__main__":
             speed_nodes = game_nodes / dt
             tb_tracker.track("speed_steps", speed_steps, step_idx)
             tb_tracker.track("speed_nodes", speed_nodes, step_idx)
-            print("Step %d, steps %3d, leaves %4d, steps/s %5.2f, leaves/s %6.2f, best_idx %d, replay %d" % (
-                step_idx, game_steps, game_nodes, speed_steps, speed_nodes, best_idx, len(replay_buffer)))
+            print(
+                "Step %d, steps %3d, leaves %4d, steps/s %5.2f, leaves/s %6.2f, best_idx %d, replay %d"
+                % (step_idx, game_steps, game_nodes, speed_steps, speed_nodes, best_idx, len(replay_buffer))
+            )
             step_idx += 1
 
             if len(replay_buffer) < MIN_REPLAY_TO_TRAIN:

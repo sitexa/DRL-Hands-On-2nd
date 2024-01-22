@@ -34,7 +34,7 @@ was written as \begin{math}\nabla J \approx \E[Q(s, a) \nabla\log \pi(a|s)]\end{
 
 Page 6, Actor-Critic
 
-However, the total reward itself could be represented as a value of the state plus advantage of the action: \begin{math}Q(s, a) = V(s) + A(s, a)\end{math}. 
+However, the total reward itself could be represented as a value of the state plus advantage of the action: \begin{math}Q(s, a) = V(s) + A(s, a)\end{math}.
 
 Page 8
 
@@ -48,7 +48,7 @@ From a training point of view, we complete these steps:
   \item  R = 0 if the end of the episode is reached or \begin{math}V_\theta(s_t)\end{math}
   \item
     For \begin{math}i = t-1 \ldots t_{start}\end{math}
-    
+
     \begin{enumerate}
 \item \begin{math}R \leftarrow r_i + \gamma R\end{math}
 \item Accumulate the policy gradients \begin{math} \partial\theta_\pi \leftarrow

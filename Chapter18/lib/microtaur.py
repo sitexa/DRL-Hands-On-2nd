@@ -1,14 +1,15 @@
-import pybullet as p
-from pybullet_envs import robot_bases, env_bases, scene_stadium
-import re
-import os
-import gym
-from gym.envs.registration import register as gym_register
 import enum
 import logging
+import os
+import re
 import tempfile
-import numpy as np
 from typing import List, Optional, Tuple
+
+import gym
+import numpy as np
+import pybullet as p
+from gym.envs.registration import register as gym_register
+from pybullet_envs import env_bases, robot_bases, scene_stadium
 
 log = logging.getLogger(__name__)
 
@@ -18,16 +19,14 @@ ENV_ID = "Microtaur-v1"
 
 class FourShortLegsRobot(robot_bases.MJCFBasedRobot):
     IMU_JOINT_NAME = "IMUroot"
-    SERVO_JOINT_NAMES = ('servo_rb', 'servo_rf',
-                         'servo_lb', 'servo_lf')
+    SERVO_JOINT_NAMES = ("servo_rb", "servo_rf", "servo_lb", "servo_lf")
 
     def __init__(self, time_step: float, zero_yaw: bool):
         action_dim = 4
         # current servo positions + pitch, roll and yaw angles
         obs_dim = 4 + 3
 
-        super(FourShortLegsRobot, self).__init__(
-            "", "four_short_legs", action_dim, obs_dim)
+        super(FourShortLegsRobot, self).__init__("", "four_short_legs", action_dim, obs_dim)
         self.time_step = time_step
         self.imu_link_idx = None
         self.scene = None
@@ -51,12 +50,9 @@ class FourShortLegsRobot(robot_bases.MJCFBasedRobot):
             self._p.setAdditionalSearchPath(self.get_model_dir())
             self.objects = self._p.loadMJCF(self.get_model_file())
             assert len(self.objects) == 1
-            self.parts, self.jdict, \
-            self.ordered_joints, self.robot_body = \
-                self.addToScene(self._p, self.objects)
+            self.parts, self.jdict, self.ordered_joints, self.robot_body = self.addToScene(self._p, self.objects)
 
-            self.imu_link_idx = self._get_imu_link_index(
-                self.IMU_JOINT_NAME)
+            self.imu_link_idx = self._get_imu_link_index(self.IMU_JOINT_NAME)
             self.doneLoading = 1
             self.state_id = self._p.saveState()
         else:
@@ -68,14 +64,14 @@ class FourShortLegsRobot(robot_bases.MJCFBasedRobot):
     def _get_imu_link_index(self, joint_name):
         for j_idx in range(self._p.getNumJoints(self.objects[0])):
             info = self._p.getJointInfo(self.objects[0], j_idx)
-            name = str(info[1], encoding='utf-8')
+            name = str(info[1], encoding="utf-8")
             if name == joint_name:
                 return j_idx
         raise RuntimeError
 
     def _joint_name_direction(self, j_name):
         # forward legs are rotating in inverse direction
-        if j_name[-1] == 'f':
+        if j_name[-1] == "f":
             return -1
         else:
             return 1
@@ -84,19 +80,15 @@ class FourShortLegsRobot(robot_bases.MJCFBasedRobot):
         for j_idx in range(self._p.getNumJoints(self.objects[0])):
             info = self._p.getJointInfo(self.objects[0], j_idx)
             print("Info for joint %d" % j_idx)
-            print("  name=%s, type=%d, qIndex=%d, uIndex=%d" % (
-                str(info[1], encoding='utf-8'), info[2], info[3], info[4]))
-            print("  lowLimit=%.2f, highLimit=%.2f, axis=%s" % (
-                info[8], info[9], info[13]
-            ))
-            print("  parentPos=%s, parentOrient=%s" % (
-                info[14], info[15]))
+            print(
+                "  name=%s, type=%d, qIndex=%d, uIndex=%d" % (str(info[1], encoding="utf-8"), info[2], info[3], info[4])
+            )
+            print("  lowLimit=%.2f, highLimit=%.2f, axis=%s" % (info[8], info[9], info[13]))
+            print("  parentPos=%s, parentOrient=%s" % (info[14], info[15]))
             print("  parentIndex=%d" % (info[16],))
 
             state = p.getJointState(1, j_idx)
-            print("  pos=%.2f, vel=%.2f, torque=%.2f" % (
-                state[0], state[1], state[3]
-            ))
+            print("  pos=%.2f, vel=%.2f, torque=%.2f" % (state[0], state[1], state[3]))
             print("")
 
     def get_link_pos(self, link_id=None):
@@ -153,11 +145,16 @@ class FourShortLegsRobot(robot_bases.MJCFBasedRobot):
             j = self.jdict[j_name]
             res_act = pos_mul * act * np.pi
             self._p.setJointMotorControl2(
-                j.bodies[j.bodyIndex], j.jointIndex,
+                j.bodies[j.bodyIndex],
+                j.jointIndex,
                 controlMode=p.POSITION_CONTROL,
-                targetPosition=res_act, targetVelocity=50,  # tune
-                positionGain=1, velocityGain=1, force=2,
-                maxVelocity=100)
+                targetPosition=res_act,
+                targetVelocity=50,  # tune
+                positionGain=1,
+                velocityGain=1,
+                force=2,
+                maxVelocity=100,
+            )
 
 
 class RewardScheme(enum.Enum):
@@ -171,13 +168,19 @@ class FourShortLegsEnv(env_bases.MJCFBaseBulletEnv):
     Actions are servo positions, observations are current positions of servos plus three 3-axis values from
     accelerometer, gyroscope and magnetometer
     """
+
     HEIGHT_BOUNDARY = 0.035
     ORIENT_TOLERANCE = 1e-2
 
-    def __init__(self, render=False, target_dir=(0, 1),
-                 timestep: float = 0.01, frameskip: int = 4,
-                 reward_scheme: RewardScheme = RewardScheme.Height,
-                 zero_yaw: bool = False):
+    def __init__(
+        self,
+        render=False,
+        target_dir=(0, 1),
+        timestep: float = 0.01,
+        frameskip: int = 4,
+        reward_scheme: RewardScheme = RewardScheme.Height,
+        zero_yaw: bool = False,
+    ):
         self.frameskip = frameskip
         self.timestep = timestep / self.frameskip
         self.reward_scheme = reward_scheme
@@ -190,8 +193,8 @@ class FourShortLegsEnv(env_bases.MJCFBaseBulletEnv):
 
     def create_single_player_scene(self, bullet_client):
         self.stadium_scene = scene_stadium.SinglePlayerStadiumScene(
-            bullet_client, gravity=9.8, timestep=self.timestep,
-            frame_skip=self.frameskip)
+            bullet_client, gravity=9.8, timestep=self.timestep, frame_skip=self.frameskip
+        )
         return self.stadium_scene
 
     def _reward(self):
@@ -204,13 +207,11 @@ class FourShortLegsEnv(env_bases.MJCFBaseBulletEnv):
             dx = pos[0] - self._prev_pos[0]
             dy = pos[1] - self._prev_pos[1]
             self._prev_pos = pos
-            result = dx * self.target_dir[0] + \
-                     dy * self.target_dir[1]
+            result = dx * self.target_dir[0] + dy * self.target_dir[1]
         elif self.reward_scheme == RewardScheme.Height:
             result = int(self._reward_check_height())
         elif self.reward_scheme == RewardScheme.HeightOrient:
-            cond = self._reward_check_height() and \
-                   self._reward_check_orient()
+            cond = self._reward_check_height() and self._reward_check_orient()
             result = int(cond)
         return result
 
@@ -228,8 +229,7 @@ class FourShortLegsEnv(env_bases.MJCFBaseBulletEnv):
         """
         orient = self.robot.get_link_orient()
         orient = p.getEulerFromQuaternion(orient)
-        return (abs(orient[0]) < self.ORIENT_TOLERANCE) and \
-               (abs(orient[1]) < self.ORIENT_TOLERANCE)
+        return (abs(orient[0]) < self.ORIENT_TOLERANCE) and (abs(orient[1]) < self.ORIENT_TOLERANCE)
 
     def step(self, action):
         self.robot.apply_action(action)
@@ -240,8 +240,7 @@ class FourShortLegsEnv(env_bases.MJCFBaseBulletEnv):
         r = super(FourShortLegsEnv, self).reset()
         if self.isRender:
             distance, yaw = 0.2, 30
-            self._p.resetDebugVisualizerCamera(
-                distance, yaw, -20, [0, 0, 0])
+            self._p.resetDebugVisualizerCamera(distance, yaw, -20, [0, 0, 0])
         return r
 
     def close(self):
@@ -253,6 +252,7 @@ class FourShortLegsRobotParametrized(FourShortLegsRobot):
     """
     Parametrized version of basic robot
     """
+
     DEFAULTS = {
         "servo.targetVelocity": 50,
         "servo.positionGain": 1,
@@ -304,17 +304,19 @@ class FourShortLegsRobotParametrized(FourShortLegsRobot):
         Create a MuJoCo model file with all values expanded
         :return:
         """
-        file = tempfile.NamedTemporaryFile(mode="w+t", dir=self.get_model_dir(), encoding='utf-8', delete=False, suffix=".xml")
+        file = tempfile.NamedTemporaryFile(
+            mode="w+t", dir=self.get_model_dir(), encoding="utf-8", delete=False, suffix=".xml"
+        )
         try:
             path = os.path.join(self.get_model_dir(), self.MODEL_TEMPLATE_FILE)
-            with open(path, "rt", encoding='utf-8') as fd:
+            with open(path, "rt", encoding="utf-8") as fd:
                 for l in fd:
                     res_parts = []
                     prev_pos = 0
                     for match in re.finditer(r"{{([\w.]+)}}", l):
                         name = match.group(1)
                         value = self._params[name]
-                        res_parts.append(l[prev_pos:match.start()])
+                        res_parts.append(l[prev_pos : match.start()])
                         res_parts.append(str(value))
                         prev_pos = match.end()
                     res_parts.append(l[prev_pos:])
@@ -358,9 +360,16 @@ class FourShortLegsRobotParametrized(FourShortLegsRobot):
 
             res_action = pos_mul * act * np.pi
             self._p.setJointMotorControl2(
-                j.bodies[j.bodyIndex], j.jointIndex, controlMode=p.POSITION_CONTROL,
-                targetPosition=res_action, targetVelocity=tgt_velocity,  positionGain=pos_gain,
-                velocityGain=vel_gain, force=force, maxVelocity=vel_max)
+                j.bodies[j.bodyIndex],
+                j.jointIndex,
+                controlMode=p.POSITION_CONTROL,
+                targetPosition=res_action,
+                targetVelocity=tgt_velocity,
+                positionGain=pos_gain,
+                velocityGain=vel_gain,
+                force=force,
+                maxVelocity=vel_max,
+            )
 
 
 def _gen_range(start, stop, delta, eps=1e-4):

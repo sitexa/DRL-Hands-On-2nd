@@ -1,9 +1,10 @@
+import enum
+
 import gym
 import gym.spaces
-from gym.utils import seeding
-from gym.envs.registration import EnvSpec
-import enum
 import numpy as np
+from gym.envs.registration import EnvSpec
+from gym.utils import seeding
 
 from . import data
 
@@ -18,9 +19,7 @@ class Actions(enum.Enum):
 
 
 class State:
-    def __init__(self, bars_count, commission_perc,
-                 reset_on_close, reward_on_close=True,
-                 volumes=True):
+    def __init__(self, bars_count, commission_perc, reset_on_close, reward_on_close=True, volumes=True):
         assert isinstance(bars_count, int)
         assert bars_count > 0
         assert isinstance(commission_perc, float)
@@ -35,7 +34,7 @@ class State:
 
     def reset(self, prices, offset):
         assert isinstance(prices, data.Prices)
-        assert offset >= self.bars_count-1
+        assert offset >= self.bars_count - 1
         self.have_position = False
         self.open_price = 0.0
         self._prices = prices
@@ -45,9 +44,9 @@ class State:
     def shape(self):
         # [h, l, c] * bars + position_flag + rel_profit
         if self.volumes:
-            return 4 * self.bars_count + 1 + 1,
+            return (4 * self.bars_count + 1 + 1,)
         else:
-            return 3*self.bars_count + 1 + 1,
+            return (3 * self.bars_count + 1 + 1,)
 
     def encode(self):
         """
@@ -55,7 +54,7 @@ class State:
         """
         res = np.ndarray(shape=self.shape, dtype=np.float32)
         shift = 0
-        for bar_idx in range(-self.bars_count+1, 1):
+        for bar_idx in range(-self.bars_count + 1, 1):
             ofs = self._offset + bar_idx
             res[shift] = self._prices.high[ofs]
             shift += 1
@@ -108,7 +107,7 @@ class State:
         self._offset += 1
         prev_close = close
         close = self._cur_close()
-        done |= self._offset >= self._prices.close.shape[0]-1
+        done |= self._offset >= self._prices.close.shape[0] - 1
 
         if self.have_position and not self.reward_on_close:
             reward += 100.0 * (close / prev_close - 1.0)
@@ -120,6 +119,7 @@ class State1D(State):
     """
     State with shape suitable for 1D convolution
     """
+
     @property
     def shape(self):
         if self.volumes:
@@ -129,8 +129,8 @@ class State1D(State):
 
     def encode(self):
         res = np.zeros(shape=self.shape, dtype=np.float32)
-        start = self._offset-(self.bars_count-1)
-        stop = self._offset+1
+        start = self._offset - (self.bars_count - 1)
+        stop = self._offset + 1
         res[0] = self._prices.high[start:stop]
         res[1] = self._prices.low[start:stop]
         res[2] = self._prices.close[start:stop]
@@ -141,45 +141,47 @@ class State1D(State):
             dst = 3
         if self.have_position:
             res[dst] = 1.0
-            res[dst+1] = self._cur_close() / self.open_price - 1.0
+            res[dst + 1] = self._cur_close() / self.open_price - 1.0
         return res
 
 
 class StocksEnv(gym.Env):
-    metadata = {'render.modes': ['human']}
+    metadata = {"render.modes": ["human"]}
     spec = EnvSpec("StocksEnv-v0")
 
-    def __init__(self, prices, bars_count=DEFAULT_BARS_COUNT,
-                 commission=DEFAULT_COMMISSION_PERC,
-                 reset_on_close=True, state_1d=False,
-                 random_ofs_on_reset=True, reward_on_close=False,
-                 volumes=False):
+    def __init__(
+        self,
+        prices,
+        bars_count=DEFAULT_BARS_COUNT,
+        commission=DEFAULT_COMMISSION_PERC,
+        reset_on_close=True,
+        state_1d=False,
+        random_ofs_on_reset=True,
+        reward_on_close=False,
+        volumes=False,
+    ):
         assert isinstance(prices, dict)
         self._prices = prices
         if state_1d:
             self._state = State1D(
-                bars_count, commission, reset_on_close,
-                reward_on_close=reward_on_close, volumes=volumes)
+                bars_count, commission, reset_on_close, reward_on_close=reward_on_close, volumes=volumes
+            )
         else:
             self._state = State(
-                bars_count, commission, reset_on_close,
-                reward_on_close=reward_on_close, volumes=volumes)
+                bars_count, commission, reset_on_close, reward_on_close=reward_on_close, volumes=volumes
+            )
         self.action_space = gym.spaces.Discrete(n=len(Actions))
-        self.observation_space = gym.spaces.Box(
-            low=-np.inf, high=np.inf,
-            shape=self._state.shape, dtype=np.float32)
+        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=self._state.shape, dtype=np.float32)
         self.random_ofs_on_reset = random_ofs_on_reset
         self.seed()
 
     def reset(self):
         # make selection of the instrument and it's offset. Then reset the state
-        self._instrument = self.np_random.choice(
-            list(self._prices.keys()))
+        self._instrument = self.np_random.choice(list(self._prices.keys()))
         prices = self._prices[self._instrument]
         bars = self._state.bars_count
         if self.random_ofs_on_reset:
-            offset = self.np_random.choice(
-                prices.high.shape[0]-bars*10) + bars
+            offset = self.np_random.choice(prices.high.shape[0] - bars * 10) + bars
         else:
             offset = bars
         self._state.reset(prices, offset)
@@ -189,13 +191,10 @@ class StocksEnv(gym.Env):
         action = Actions(action_idx)
         reward, done = self._state.step(action)
         obs = self._state.encode()
-        info = {
-            "instrument": self._instrument,
-            "offset": self._state._offset
-        }
+        info = {"instrument": self._instrument, "offset": self._state._offset}
         return obs, reward, done, info
 
-    def render(self, mode='human', close=False):
+    def render(self, mode="human", close=False):
         pass
 
     def close(self):
@@ -203,13 +202,10 @@ class StocksEnv(gym.Env):
 
     def seed(self, seed=None):
         self.np_random, seed1 = seeding.np_random(seed)
-        seed2 = seeding.hash_seed(seed1 + 1) % 2 ** 31
+        seed2 = seeding.hash_seed(seed1 + 1) % 2**31
         return [seed1, seed2]
 
     @classmethod
     def from_dir(cls, data_dir, **kwargs):
-        prices = {
-            file: data.load_relative(file)
-            for file in data.price_files(data_dir)
-        }
+        prices = {file: data.load_relative(file) for file in data.price_files(data_dir)}
         return StocksEnv(prices, **kwargs)

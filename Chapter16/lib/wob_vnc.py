@@ -1,10 +1,8 @@
 import gym
 import numpy as np
 from PIL import Image, ImageDraw
-
-from universe.wrappers.experimental import SoftmaxClickMouse
 from universe import vectorized
-
+from universe.wrappers.experimental import SoftmaxClickMouse
 
 # observation speed. Shouldn't be more than 15, as
 # rewarder thread on the server side will fall behind.
@@ -19,22 +17,24 @@ Y_OFS = 75
 WOB_SHAPE = (3, HEIGHT, WIDTH)
 
 
-def remotes_url(port_ofs=0, hostname='localhost', count=8):
-    hosts = ["%s:%d+%d" % (hostname, 5900 + ofs, 15900 + ofs) for ofs in range(port_ofs, port_ofs+count)]
+def remotes_url(port_ofs=0, hostname="localhost", count=8):
+    hosts = ["%s:%d+%d" % (hostname, 5900 + ofs, 15900 + ofs) for ofs in range(port_ofs, port_ofs + count)]
     return "vnc://" + ",".join(hosts)
 
 
 def configure(env, remotes, fps=FPS):
-    env.configure(remotes=remotes, fps=fps, vnc_kwargs={
-        'encoding': 'tight', 'compress_level': 0,
-        'fine_quality_level': 100, 'subsample_level': 0
-    })
+    env.configure(
+        remotes=remotes,
+        fps=fps,
+        vnc_kwargs={"encoding": "tight", "compress_level": 0, "fine_quality_level": 100, "subsample_level": 0},
+    )
 
 
 class MiniWoBCropper(vectorized.ObservationWrapper):
     """
     Crops the WoB area and converts the observation into PyTorch (C, H, W) format.
     """
+
     def __init__(self, env, keep_text=False):
         super(MiniWoBCropper, self).__init__(env)
         self.keep_text = keep_text
@@ -45,12 +45,11 @@ class MiniWoBCropper(vectorized.ObservationWrapper):
             if obs is None:
                 res.append(obs)
                 continue
-            img = obs['vision'][Y_OFS:Y_OFS+HEIGHT,
-                                X_OFS:X_OFS+WIDTH, :]
+            img = obs["vision"][Y_OFS : Y_OFS + HEIGHT, X_OFS : X_OFS + WIDTH, :]
             img = np.transpose(img, (2, 0, 1))
             if self.keep_text:
-                t_fun = lambda d: d.get('instruction', '')
-                text = " ".join(map(t_fun, obs.get('text', [{}])))
+                t_fun = lambda d: d.get("instruction", "")
+                text = " ".join(map(t_fun, obs.get("text", [{}])))
                 res.append((img, text))
             else:
                 res.append(img)
@@ -79,9 +78,8 @@ def save_obs(obs, file_name, action=None, action_step_pix=10, action_y_ofs=50, t
         else:
             y_ofs = action_y_ofs + (action % 16) * action_step_pix
             x_ofs = (action // 16) * action_step_pix
-        half_step = action_step_pix//2
-        draw.ellipse((x_ofs-half_step, y_ofs-half_step, x_ofs+half_step, y_ofs+half_step),
-                     (0, 0, 255, 128))
+        half_step = action_step_pix // 2
+        draw.ellipse((x_ofs - half_step, y_ofs - half_step, x_ofs + half_step, y_ofs + half_step), (0, 0, 255, 128))
     img.save(file_name)
 
 
@@ -90,6 +88,7 @@ class MiniWoBPeeker(vectorized.Wrapper):
     Saves series of images with actions with a specifed prefix. Passes everything
     unchanged. Supposed to be inserted between SoftMaxClicker and MiniWoBCropper.
     """
+
     def __init__(self, env, img_prefix):
         super(MiniWoBPeeker, self).__init__(env)
         self.img_prefix = img_prefix
@@ -123,10 +122,15 @@ class MiniWoBPeeker(vectorized.Wrapper):
         for idx, (obs, reward, done, action) in enumerate(zip(observation_n, reward_n, done_n, action_n)):
             if obs is not None and not done:
                 fname = "%s_env%d_ep%03d_st%03d_rw%.2f_d%d.png" % (
-                    self.img_prefix, idx, self.episodes[idx], self.steps[idx], reward, int(done)
+                    self.img_prefix,
+                    idx,
+                    self.episodes[idx],
+                    self.steps[idx],
+                    reward,
+                    int(done),
                 )
-                img = obs['vision']
-                img = img[Y_OFS:Y_OFS+HEIGHT, X_OFS:X_OFS+WIDTH*2, :]
+                img = obs["vision"]
+                img = img[Y_OFS : Y_OFS + HEIGHT, X_OFS : X_OFS + WIDTH * 2, :]
                 self.img_stack[idx] = (img, fname)
             else:
                 self.img_stack[idx] = None

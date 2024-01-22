@@ -34,16 +34,16 @@ Page 10, Model application
 
 In addition, the value returned by the model is also used in this decision-making. The value is being tracked as the maximum from the current state's value and the value from their its children. This allows the most promising paths (from the model perspective) to be seen from the parent's states.
 
-To summarize, the action to follow from a non-leaf tree is chosen by using the following formula: 
-\begin{math}A_t = \argmax_a (U_{s_t}(a) + W_{s_t}(a))\end{math}, where \begin{math}U_{s_t}(a) = c P_{s_t}(a) \frac{\sqrt{\sum_{a'}N_{s_t}(a')}}{1 + N_{s_t}(a)}\end{math}. 
-Here \begin{math}N_{s_t}(a)\end{math} is a count of times action a has been chosen in the state \begin{math}s_t\end{math}. \begin{math}P_{s_t}(a)\end{math} is the policy returned by the model for state \begin{math}s_t\end{math} and \begin{math}W_{s_t}(a)\end{math} is the maximum value returned by the model for all children's states of \begin{math}s_t\end{math} under the branch a. 
+To summarize, the action to follow from a non-leaf tree is chosen by using the following formula:
+\begin{math}A_t = \argmax_a (U_{s_t}(a) + W_{s_t}(a))\end{math}, where \begin{math}U_{s_t}(a) = c P_{s_t}(a) \frac{\sqrt{\sum_{a'}N_{s_t}(a')}}{1 + N_{s_t}(a)}\end{math}.
+Here \begin{math}N_{s_t}(a)\end{math} is a count of times action a has been chosen in the state \begin{math}s_t\end{math}. \begin{math}P_{s_t}(a)\end{math} is the policy returned by the model for state \begin{math}s_t\end{math} and \begin{math}W_{s_t}(a)\end{math} is the maximum value returned by the model for all children's states of \begin{math}s_t\end{math} under the branch a.
 
 
 Page 16, Experiment results
 
-After several experiments with this, I've come to the conclusion that this behavior is a result of the wrong value objective proposed in the method. Indeed, in formula \begin{math}y_{v_i} = \max_a (v_s(a) + R(A(s, a)))\end{math}, the value \begin{math}v_s(a)\end{math} returned by the network is always added to the actual reward R(s), even for the goal state. With this, the actual values returned by the network could be anything: -100, 106 or 3.1415. This is not a great situation for neural network training, especially with the MSE objective. 
+After several experiments with this, I've come to the conclusion that this behavior is a result of the wrong value objective proposed in the method. Indeed, in formula \begin{math}y_{v_i} = \max_a (v_s(a) + R(A(s, a)))\end{math}, the value \begin{math}v_s(a)\end{math} returned by the network is always added to the actual reward R(s), even for the goal state. With this, the actual values returned by the network could be anything: -100, 106 or 3.1415. This is not a great situation for neural network training, especially with the MSE objective.
 
-To check this, I modified the method of the target value calculation by assigning zero target for the goal state: 
+To check this, I modified the method of the target value calculation by assigning zero target for the goal state:
 
 \begin{equation*}
 y_{v_i} = \begin{cases}

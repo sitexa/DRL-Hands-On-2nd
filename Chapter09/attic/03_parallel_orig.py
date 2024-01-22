@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-import gym
-import ptan
 import argparse
 
+import gym
+import ptan
 import torch
-import torch.optim as optim
 import torch.multiprocessing as mp
-
+import torch.optim as optim
+from lib import common, dqn_model
 from tensorboardX import SummaryWriter
-
-from lib import dqn_model, common
 
 PLAY_STEPS = 4
 
@@ -46,8 +44,8 @@ def play_func(params, net, cuda, exp_queue):
 
 
 if __name__ == "__main__":
-    mp.set_start_method('spawn')
-    params = common.HYPERPARAMS['pong']
+    mp.set_start_method("spawn")
+    params = common.HYPERPARAMS["pong"]
     params.batch_size *= PLAY_STEPS
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda")
@@ -70,8 +68,8 @@ if __name__ == "__main__":
     frame_idx = 0
 
     while play_proc.is_alive():
-#        frame_idx += PLAY_STEPS
-        #for _ in range(PLAY_STEPS):
+        #        frame_idx += PLAY_STEPS
+        # for _ in range(PLAY_STEPS):
         while exp_queue.qsize() > 1:
             exp = exp_queue.get()
             if exp is None:
@@ -89,4 +87,3 @@ if __name__ == "__main__":
         loss_v = common.calc_loss_dqn(batch, net, tgt_net.target_model, gamma=params.gamma, device=device)
         loss_v.backward()
         optimizer.step()
-

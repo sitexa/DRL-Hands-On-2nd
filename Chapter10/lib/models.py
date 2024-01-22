@@ -1,6 +1,6 @@
 import math
-import numpy as np
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -35,19 +35,11 @@ class SimpleFFDQN(nn.Module):
         super(SimpleFFDQN, self).__init__()
 
         self.fc_val = nn.Sequential(
-            nn.Linear(obs_len, 512),
-            nn.ReLU(),
-            nn.Linear(512, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1)
+            nn.Linear(obs_len, 512), nn.ReLU(), nn.Linear(512, 512), nn.ReLU(), nn.Linear(512, 1)
         )
 
         self.fc_adv = nn.Sequential(
-            nn.Linear(obs_len, 512),
-            nn.ReLU(),
-            nn.Linear(512, 512),
-            nn.ReLU(),
-            nn.Linear(512, actions_n)
+            nn.Linear(obs_len, 512), nn.ReLU(), nn.Linear(512, 512), nn.ReLU(), nn.Linear(512, actions_n)
         )
 
     def forward(self, x):
@@ -69,17 +61,9 @@ class DQNConv1D(nn.Module):
 
         out_size = self._get_conv_out(shape)
 
-        self.fc_val = nn.Sequential(
-            nn.Linear(out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1)
-        )
+        self.fc_val = nn.Sequential(nn.Linear(out_size, 512), nn.ReLU(), nn.Linear(512, 1))
 
-        self.fc_adv = nn.Sequential(
-            nn.Linear(out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, actions_n)
-        )
+        self.fc_adv = nn.Sequential(nn.Linear(out_size, 512), nn.ReLU(), nn.Linear(512, actions_n))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -117,17 +101,9 @@ class DQNConv1DLarge(nn.Module):
 
         out_size = self._get_conv_out(shape)
 
-        self.fc_val = nn.Sequential(
-            nn.Linear(out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1)
-        )
+        self.fc_val = nn.Sequential(nn.Linear(out_size, 512), nn.ReLU(), nn.Linear(512, 1))
 
-        self.fc_adv = nn.Sequential(
-            nn.Linear(out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, actions_n)
-        )
+        self.fc_adv = nn.Sequential(nn.Linear(out_size, 512), nn.ReLU(), nn.Linear(512, actions_n))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))

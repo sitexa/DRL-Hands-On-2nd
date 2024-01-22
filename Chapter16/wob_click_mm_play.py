@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 import argparse
-import gym
-import universe
-import numpy as np
 
+import gym
+import numpy as np
 import torch
 import torch.nn.functional as F
-
-from lib import wob_vnc, model_vnc
-
+import universe
+from lib import model_vnc, wob_vnc
 
 ENV_NAME = "wob.mini.ClickTab-v0"
-REMOTE_ADDR = 'vnc://gpu:5910+15910'
+REMOTE_ADDR = "vnc://gpu:5910+15910"
 
 # docker run -d -p 5910:5900 -p 15910:15900 --privileged --ipc host --cap-add SYS_ADMIN 92756d1f08ac
 
@@ -36,7 +34,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     env_name = args.env
-    if not env_name.startswith('wob.mini.'):
+    if not env_name.startswith("wob.mini."):
         env_name = "wob.mini." + env_name
 
     env = gym.make(env_name)
@@ -59,7 +57,13 @@ if __name__ == "__main__":
             obs, reward, done, info, idle_count = step_env(env, action)
             print(step_idx, reward, done, idle_count)
             img_name = "%s_r%02d_s%04d_%.3f_i%02d_d%d.png" % (
-                args.name, round_idx, step_idx, reward, idle_count, int(done))
+                args.name,
+                round_idx,
+                step_idx,
+                reward,
+                idle_count,
+                int(done),
+            )
             obs_v = preprocessor([obs])
             logits_v = net(obs_v)[0]
             policy = F.softmax(logits_v, dim=1).data.numpy()[0]

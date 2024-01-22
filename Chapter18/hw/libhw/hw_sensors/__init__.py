@@ -1,7 +1,5 @@
 from .. import sensors
-from . import lis331dlh
-from . import lis3mdl
-from . import l3g4200d
+from . import l3g4200d, lis3mdl, lis331dlh
 
 SENSOR_CLASSES = (lis331dlh.Lis331DLH, lis3mdl.Lis3MDL, l3g4200d.L3G4200D)
 

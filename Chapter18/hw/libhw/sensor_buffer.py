@@ -8,6 +8,7 @@ class SensorsBuffer:
     """
     Implements circular data buffer for SD saving and enqueue performed by timer callback
     """
+
     def __init__(self, sensors, timer_index, freq, batch_size, buffer_size):
         """
         Constructs the buffer
@@ -24,10 +25,7 @@ class SensorsBuffer:
         # total data produced by our sensors
         data_len = sum(map(len, sensors))
         # circular buffer to be filled by sensor query process
-        self._buffer = [
-            [bytearray(data_len) for _ in range(batch_size)]
-            for _ in range(buffer_size)
-        ]
+        self._buffer = [[bytearray(data_len) for _ in range(batch_size)] for _ in range(buffer_size)]
         # head of the buffer - index of the first batch to be written (if equals to _tail -- buffer empty)
         self._head = 0
         # tail of the buffer - index of the batch being written
@@ -45,7 +43,9 @@ class SensorsBuffer:
 
     def __repr__(self):
         return "SensorsBuffer(batches_full=%d, batches_total=%d, batch_size=%d)" % (
-            abs(self._tail - self._head), self.buffer_size, self.batch_size
+            abs(self._tail - self._head),
+            self.buffer_size,
+            self.batch_size,
         )
 
     def callback(self, t):
@@ -67,4 +67,3 @@ class SensorsBuffer:
         while self._head != self._tail:
             yield self._buffer[self._head]
             self._head = (self._head + 1) % self.buffer_size
-

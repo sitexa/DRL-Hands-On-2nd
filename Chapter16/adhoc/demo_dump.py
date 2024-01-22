@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+
 sys.path.append(os.getcwd())
 sys.path.append("..")
 import argparse
@@ -11,9 +12,9 @@ from lib import vnc_demo, wob_vnc
 DEFAULT_ENV = "wob.mini.ClickTest2-v0"
 
 
-from universe.spaces import vnc_event
 import gym
 import universe
+from universe.spaces import vnc_event
 
 
 def test_mouse_coords():
@@ -30,9 +31,8 @@ def test_mouse_coords():
         pass
 
 
-
 if __name__ == "__main__":
-#    test_mouse_coords()
+    #    test_mouse_coords()
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--demo", required=True, help="Dir name to scan for demos")
     parser.add_argument("-e", "--env", default=DEFAULT_ENV, help="Environment name to load, default=" + DEFAULT_ENV)
@@ -53,5 +53,3 @@ if __name__ == "__main__":
         print(fname, text)
 
     pass
-
-

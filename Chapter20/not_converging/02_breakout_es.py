@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
-import gym
-import ptan
-import time
 import argparse
-import numpy as np
 import collections
+import time
 
+import gym
+import numpy as np
+import ptan
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
+from tensorboardX import SummaryWriter
 from torch import multiprocessing as mp
 from torch import optim
-
-from tensorboardX import SummaryWriter
+from torch.autograd import Variable
 
 NOISE_STD = 0.05
 LEARNING_RATE = 0.001
@@ -25,13 +24,14 @@ MAX_ITERS = 100000
 # 2. reward obtained from the positive noise
 # 3. reward obtained from the negative noise
 # 4. total amount of steps done
-RewardsItem = collections.namedtuple('RewardsItem', field_names=['seed', 'pos_reward', 'neg_reward', 'steps'])
+RewardsItem = collections.namedtuple("RewardsItem", field_names=["seed", "pos_reward", "neg_reward", "steps"])
 
 
 class VBN(nn.Module):
     """
     Virtual batch normalization
     """
+
     def __init__(self, n_feats, epsilon=1e-5, batches_to_train=1):
         super(VBN, self).__init__()
         self.epsilon = epsilon
@@ -47,16 +47,11 @@ class Net(nn.Module):
             nn.Conv2d(32, 32, kernel_size=3, stride=2),
             nn.ReLU(),
             nn.Conv2d(32, 32, kernel_size=3, stride=2),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.fc = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, n_actions),
-            nn.Softmax()
-        )
+        self.fc = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, n_actions), nn.Softmax())
 
     def _get_conv_out(self, shape):
         o = self.conv(Variable(torch.zeros(1, *shape)))
@@ -97,7 +92,7 @@ def sample_noise(net, cuda=False):
 
 
 def eval_with_noise(env, net, noise, noise_std, cuda=False):
-#    old_params = net.state_dict()
+    #    old_params = net.state_dict()
     for p, p_n in zip(net.parameters(), noise):
         p.data += noise_std * p_n
     r, s = evaluate(env, net, cuda=cuda)
@@ -120,8 +115,8 @@ def compute_ranks(x):
 
 def compute_centered_ranks(x):
     y = compute_ranks(x.ravel()).reshape(x.shape).astype(np.float32)
-    y /= (x.size - 1)
-    y -= .5
+    y /= x.size - 1
+    y -= 0.5
     return y
 
 
@@ -169,15 +164,16 @@ def worker_func(worker_id, params_queue, rewards_queue, cuda, noise_std):
             noise, neg_noise = sample_noise(net, cuda=cuda)
             pos_reward, pos_steps = eval_with_noise(env, net, noise, noise_std, cuda=cuda)
             neg_reward, neg_steps = eval_with_noise(env, net, neg_noise, noise_std, cuda=cuda)
-            rewards_queue.put(RewardsItem(seed=seed, pos_reward=pos_reward,
-                                          neg_reward=neg_reward, steps=pos_steps+neg_steps))
+            rewards_queue.put(
+                RewardsItem(seed=seed, pos_reward=pos_reward, neg_reward=neg_reward, steps=pos_steps + neg_steps)
+            )
     pass
 
 
 if __name__ == "__main__":
-    mp.set_start_method('spawn')
+    mp.set_start_method("spawn")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cuda", default=False, action='store_true', help="Enable CUDA mode")
+    parser.add_argument("--cuda", default=False, action="store_true", help="Enable CUDA mode")
     parser.add_argument("--lr", type=float, default=LEARNING_RATE)
     parser.add_argument("--noise-std", type=float, default=NOISE_STD)
     parser.add_argument("--iters", type=int, default=MAX_ITERS)
@@ -225,8 +221,8 @@ if __name__ == "__main__":
                 results += 1
                 batch_steps += reward.steps
                 batch_steps_data.append(reward.steps)
-                    # print("Result from %d: %s, noise: %s" % (
-                    #     idx, reward, noise[0][0, 0, 0:1]))
+                # print("Result from %d: %s, noise: %s" % (
+                #     idx, reward, noise[0][0, 0, 0:1]))
 
             if results == PROCESSES_COUNT * ITERS_PER_UPDATE:
                 break
@@ -244,9 +240,20 @@ if __name__ == "__main__":
         writer.add_scalar("speed", speed, step_idx)
         dt_step = time.time() - t_start - dt_data
 
-        print("%d: reward=%.2f, speed=%.2f f/s, data_gather=%.3f, train=%.3f, steps_mean=%.2f, min=%.2f, max=%.2f, steps_std=%.2f" % (
-            step_idx, m_reward, speed, dt_data, dt_step, np.mean(batch_steps_data),
-            np.min(batch_steps_data), np.max(batch_steps_data), np.std(batch_steps_data)))
+        print(
+            "%d: reward=%.2f, speed=%.2f f/s, data_gather=%.3f, train=%.3f, steps_mean=%.2f, min=%.2f, max=%.2f, steps_std=%.2f"
+            % (
+                step_idx,
+                m_reward,
+                speed,
+                dt_data,
+                dt_step,
+                np.mean(batch_steps_data),
+                np.min(batch_steps_data),
+                np.max(batch_steps_data),
+                np.std(batch_steps_data),
+            )
+        )
 
     for worker, p_queue in zip(workers, params_queues):
         p_queue.put(None)

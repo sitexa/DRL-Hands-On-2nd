@@ -13,7 +13,7 @@ REWARD_STEPS = 4
 CLIP_GRAD = 0.1
 ```
 
-Run Dec11_23-46-06_gpu-pong-a2c_t1, 
+Run Dec11_23-46-06_gpu-pong-a2c_t1,
 9M steps, 3 hours
 
 Tweak one parameter at a time
@@ -39,7 +39,7 @@ Good value is something between 0.002 and 0.003
 * Envs = 20: 9.5M, 3h
 * Envs = 10: hasn't converged in 12M frames and 4.5h, stopped
 * Envs = 60: 11.6M, 4H (looks like an unlucky seed)
-* Envs = 70: 7.7M, 2.5H 
+* Envs = 70: 7.7M, 2.5H
 
 ## Batch size
 

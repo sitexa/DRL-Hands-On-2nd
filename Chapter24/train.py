@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
+import argparse
+import collections
+import logging
 import os
 import time
-import argparse
-import logging
-import numpy as np
-import collections
 
+import numpy as np
 import torch
+import torch.nn.functional as F
 import torch.optim as optim
 import torch.optim.lr_scheduler as scheduler
-import torch.nn.functional as F
-
+from libcube import conf, cubes, model
 from tensorboardX import SummaryWriter
-
-from libcube import cubes
-from libcube import model
-from libcube import conf
 
 log = logging.getLogger("train")
 
@@ -52,24 +48,25 @@ if __name__ == "__main__":
     best_loss = None
 
     log.info("Generate scramble buffer...")
-    scramble_buf = collections.deque(maxlen=config.scramble_buffer_batches*config.train_batch_size)
-    scramble_buf.extend(model.make_scramble_buffer(cube_env, config.train_batch_size*2, config.train_scramble_depth))
+    scramble_buf = collections.deque(maxlen=config.scramble_buffer_batches * config.train_batch_size)
+    scramble_buf.extend(model.make_scramble_buffer(cube_env, config.train_batch_size * 2, config.train_scramble_depth))
     log.info("Generated buffer of size %d", len(scramble_buf))
 
     while True:
         step_idx += 1
         x_t, weights_t, y_policy_t, y_value_t = model.sample_batch(
-            scramble_buf, net, device, config.train_batch_size, value_targets_method)
+            scramble_buf, net, device, config.train_batch_size, value_targets_method
+        )
 
         opt.zero_grad()
         policy_out_t, value_out_t = net(x_t)
         value_out_t = value_out_t.squeeze(-1)
-        value_loss_t = (value_out_t - y_value_t)**2
+        value_loss_t = (value_out_t - y_value_t) ** 2
         value_loss_raw_t = value_loss_t.mean()
         if config.weight_samples:
             value_loss_t *= weights_t
         value_loss_t = value_loss_t.mean()
-        policy_loss_t = F.cross_entropy(policy_out_t, y_policy_t, reduction='none')
+        policy_loss_t = F.cross_entropy(policy_out_t, y_policy_t, reduction="none")
         policy_loss_raw_t = policy_loss_t.mean()
         if config.weight_samples:
             policy_loss_t *= weights_t
@@ -114,8 +111,14 @@ if __name__ == "__main__":
             dt = time.time() - ts
             ts = time.time()
             speed = config.train_batch_size * config.train_report_batches / dt
-            log.info("%d: p_loss=%.3e, v_loss=%.3e, loss=%.3e, speed=%.1f cubes/s",
-                     step_idx, m_policy_loss, m_value_loss, m_loss, speed)
+            log.info(
+                "%d: p_loss=%.3e, v_loss=%.3e, loss=%.3e, speed=%.1f cubes/s",
+                step_idx,
+                m_policy_loss,
+                m_value_loss,
+                m_loss,
+                speed,
+            )
             sum_train_data = 0.0
             sum_opt = 0.0
             writer.add_scalar("loss_policy", m_policy_loss, step_idx)
@@ -135,8 +138,9 @@ if __name__ == "__main__":
                 best_loss = m_loss
 
         if step_idx % config.push_scramble_buffer_iters == 0:
-            scramble_buf.extend(model.make_scramble_buffer(cube_env, config.train_batch_size,
-                                                           config.train_scramble_depth))
+            scramble_buf.extend(
+                model.make_scramble_buffer(cube_env, config.train_batch_size, config.train_scramble_depth)
+            )
             log.info("Pushed new data in scramble buffer, new size = %d", len(scramble_buf))
 
         if config.train_checkpoint_batches is not None and step_idx % config.train_checkpoint_batches == 0:

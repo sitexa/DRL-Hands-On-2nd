@@ -1,7 +1,7 @@
 import unittest
-from numpy import testing
 
 from lib import ppo
+from numpy import testing
 
 
 class TestPPO(unittest.TestCase):
@@ -21,9 +21,7 @@ class TestPPO(unittest.TestCase):
         adv = adv_t.detach().numpy()
         ref = ref_t.detach().numpy()
 
-        testing.assert_array_almost_equal(ref, [2.71, 1.9, 1., 1.])
+        testing.assert_array_almost_equal(ref, [2.71, 1.9, 1.0, 1.0])
         testing.assert_array_almost_equal(ref, adv)
 
-
         pass
-

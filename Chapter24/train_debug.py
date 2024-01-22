@@ -5,15 +5,12 @@ Ad-hoc utility to analyze trained model and various training process details
 import argparse
 import logging
 
-import torch
-import torch.nn.functional as F
-import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-
-from libcube import cubes
-from libcube import model
-
+import seaborn as sns
+import torch
+import torch.nn.functional as F
+from libcube import cubes, model
 
 log = logging.getLogger("train_debug")
 
@@ -22,8 +19,8 @@ log = logging.getLogger("train_debug")
 MAX_DEPTH = 10
 ROUND_COUNTS = 100
 # debug params
-#MAX_DEPTH = 5
-#ROUND_COUNTS = 2
+# MAX_DEPTH = 5
+# ROUND_COUNTS = 2
 
 
 def gen_states(cube_env, max_depth, round_counts):
@@ -38,7 +35,7 @@ def gen_states(cube_env, max_depth, round_counts):
     for _ in range(round_counts):
         data = cube_env.scramble_cube(max_depth, return_inverse=True)
         for depth, state, inv_action in data:
-            result[depth-1].append((state, inv_action.value))
+            result[depth - 1].append((state, inv_action.value))
     return result
 
 
@@ -59,7 +56,7 @@ if __name__ == "__main__":
     net.eval()
     log.info("Network loaded from %s", args.model)
 
-#    model.make_train_data(cube_env, net, device='cpu', batch_size=10, scramble_depth=2, shuffle=False)
+    #    model.make_train_data(cube_env, net, device='cpu', batch_size=10, scramble_depth=2, shuffle=False)
 
     states_by_depth = gen_states(cube_env, max_depth=MAX_DEPTH, round_counts=ROUND_COUNTS)
     # for idx, states in enumerate(states_by_depth):
@@ -69,7 +66,7 @@ if __name__ == "__main__":
     data = []
     for depth, states in enumerate(states_by_depth):
         for s, inv_action in states:
-            data.append((depth+1, s, inv_action))
+            data.append((depth + 1, s, inv_action))
     depths, states, inv_actions = map(list, zip(*data))
 
     # process states with net

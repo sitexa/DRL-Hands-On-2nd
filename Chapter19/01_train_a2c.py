@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-import os
-import math
-import ptan
-import time
-import gym
-import pybullet_envs
 import argparse
-from tensorboardX import SummaryWriter
+import math
+import os
+import time
 
-from lib import model, common, test_net, calc_logprob
-
+import gym
 import numpy as np
+import ptan
+import pybullet_envs
 import torch
-import torch.optim as optim
 import torch.nn.functional as F
-
+import torch.optim as optim
+from lib import calc_logprob, common, model, test_net
+from tensorboardX import SummaryWriter
 
 ENV_ID = "HalfCheetahBulletEnv-v0"
 GAMMA = 0.99
@@ -30,7 +28,7 @@ TEST_ITERS = 100000
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cuda", default=False, action='store_true', help='Enable CUDA')
+    parser.add_argument("--cuda", default=False, action="store_true", help="Enable CUDA")
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
     parser.add_argument("-e", "--env", default=ENV_ID, help="Environment id, default=" + ENV_ID)
     args = parser.parse_args()
@@ -68,8 +66,7 @@ if __name__ == "__main__":
                 if step_idx % TEST_ITERS == 0:
                     ts = time.time()
                     rewards, steps = test_net(net_act, test_env, device=device)
-                    print("Test done in %.2f sec, reward %.3f, steps %d" % (
-                        time.time() - ts, rewards, steps))
+                    print("Test done in %.2f sec, reward %.3f, steps %d" % (time.time() - ts, rewards, steps))
                     writer.add_scalar("test_reward", rewards, step_idx)
                     writer.add_scalar("test_steps", steps, step_idx)
                     if best_reward is None or best_reward < rewards:
@@ -84,8 +81,9 @@ if __name__ == "__main__":
                 if len(batch) < BATCH_SIZE:
                     continue
 
-                states_v, actions_v, vals_ref_v = \
-                    common.unpack_batch_a2c(batch, net_crt, last_val_gamma=GAMMA ** REWARD_STEPS, device=device)
+                states_v, actions_v, vals_ref_v = common.unpack_batch_a2c(
+                    batch, net_crt, last_val_gamma=GAMMA**REWARD_STEPS, device=device
+                )
                 batch.clear()
 
                 opt_crt.zero_grad()
@@ -99,7 +97,7 @@ if __name__ == "__main__":
                 adv_v = vals_ref_v.unsqueeze(dim=-1) - value_v.detach()
                 log_prob_v = adv_v * calc_logprob(mu_v, net_act.logstd, actions_v)
                 loss_policy_v = -log_prob_v.mean()
-                entropy_loss_v = ENTROPY_BETA * (-(torch.log(2*math.pi*torch.exp(net_act.logstd)) + 1)/2).mean()
+                entropy_loss_v = ENTROPY_BETA * (-(torch.log(2 * math.pi * torch.exp(net_act.logstd)) + 1) / 2).mean()
                 loss_v = loss_policy_v + entropy_loss_v
                 loss_v.backward()
                 opt_act.step()
@@ -111,4 +109,3 @@ if __name__ == "__main__":
                 tb_tracker.track("loss_policy", loss_policy_v, step_idx)
                 tb_tracker.track("loss_value", loss_value_v, step_idx)
                 tb_tracker.track("loss_total", loss_v, step_idx)
-

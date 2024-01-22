@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-import gym
 import collections
+
+import gym
 from tensorboardX import SummaryWriter
 
 ENV_NAME = "FrozenLake-v0"
-#ENV_NAME = "FrozenLake8x8-v0"      # uncomment for larger version
+# ENV_NAME = "FrozenLake8x8-v0"      # uncomment for larger version
 GAMMA = 0.9
 TEST_EPISODES = 20
 
@@ -58,8 +59,7 @@ class Agent:
                     key = (state, action, tgt_state)
                     reward = self.rewards[key]
                     best_action = self.select_action(tgt_state)
-                    val = reward + GAMMA * \
-                          self.values[(tgt_state, best_action)]
+                    val = reward + GAMMA * self.values[(tgt_state, best_action)]
                     action_value += (count / total) * val
                 self.values[(state, action)] = action_value
 

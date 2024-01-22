@@ -32,7 +32,7 @@ Page 3, Tabular Q-Learning
 \end{enumerate}
 
 
-...using learning rate $\alpha$ with value from 0 to 1: 
+...using learning rate $\alpha$ with value from 0 to 1:
 
 \begin{equation*}
   Q(s,a) \leftarrow (1 - \alpha)Q(s,a) + \alpha (r + \gamma \max\limits_{a' \in A}Q(s',a'))
@@ -43,7 +43,7 @@ The final version of the algorithm is here:
 \begin{enumerate}
   \item Start with empty table for Q(s, a).
   \item Obtain (s, a, r, s') from the environment.
-  \item Make Bellman update: \begin{math}Q(s, a) \leftarrow (1 - \alpha) Q(s, a) + \alpha (r + \gamma \max\limits_{a' \in A} Q(s',a'))\end{math} 
+  \item Make Bellman update: \begin{math}Q(s, a) \leftarrow (1 - \alpha) Q(s, a) + \alpha (r + \gamma \max\limits_{a' \in A} Q(s',a'))\end{math}
   \item Check convergence conditions, if not met, repeat from step 2.
 \end{enumerate}
 
@@ -71,7 +71,7 @@ Page 11, Final form of DQN training
   \item Execute action a in emulator and observe reward r and next state s'.
   \item Store transition (s, a, r, s') in the replay buffer.
   \item Sample random minibatch of transitions from replay buffer.
-  \item For every transition in the buffer calculate target \begin{math}y = r\end{math} 
+  \item For every transition in the buffer calculate target \begin{math}y = r\end{math}
     if episode has ended at this step or
     \begin{math}y = r + \gamma \max\limits_{a' \in A} \hat{Q}(s',a')\end{math}
   \item Calculate loss: \begin{math}\mathcal{L} = (Q(s, a) - y)^2\end{math}

@@ -19,7 +19,3 @@ set -x
 ../plot.py -i a2c-grad_l2.csv -o 11-02-grad-l2.svg -x Steps -y "Gradient L2"
 ../plot.py -i a2c-grad_max.csv -o 12-01-grad_max.svg -x Steps -y "Gradient max"
 ../plot.py -i a2c-grad_var.csv -o 12-02-grad_var.svg -x Steps -y "Gradient variance"
-
-
-
-

@@ -7,7 +7,6 @@ import random
 
 from libcube import cubes
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--env", required=True, help="Type of env to train, supported types=%s" % cubes.names())

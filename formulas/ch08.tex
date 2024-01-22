@@ -28,7 +28,7 @@ Page 9, N-steps DQN
 This equation is recursive, which means that we can express \begin{math}Q(s_{t+1}, a_{t+1})\end{math} in terms of itself, which gives us this result:
 
 \begin{equation*}
-  Q(s_t, a_t) = r_t + \gamma \max_a [r_{a,t+1} + \gamma \max_{a'} Q(s_{t+2},a')] 
+  Q(s_t, a_t) = r_t + \gamma \max_a [r_{a,t+1} + \gamma \max_{a'} Q(s_{t+2},a')]
 \end{equation*}
 
 Value \begin{math}r_{a,t+1}\end{math} means local reward at time t+1, after issuing action a. However, if we assume that our action a at the step t+1 was chosen optimally, or close to optimally, we can omit \begin{math}\max_a\end{math} operation and obtain this:
@@ -79,7 +79,7 @@ In the basic DQN, our target value for Q looked like this:
 \begin{math}Q'(s_{t+1}, a)\end{math} was Q-values calculated using our target network, so we update with the trained network every n steps. The authors of the paper proposed choosing actions for the next state using the trained network but taking values of Q from the target net. So, the new expression for target Q-values will look like this:
 
 \begin{equation*}
-  Q(s_t, a_t) = r_t + \gamma \max_a Q'(s_{t+1},\argmax_a Q(s_{t+1}, a))  
+  Q(s_t, a_t) = r_t + \gamma \max_a Q'(s_{t+1},\argmax_a Q(s_{t+1}, a))
 \end{equation*}
 
 
@@ -121,5 +121,5 @@ At the end of the function, we need to compute output of network and calculate
 KL-divergence between projected distribution and network’s output for the taken
 actions. KL divergence shows how much two distributions differ and is defined as
 \begin{math}D_{KL}(P\|Q) = -\sum_i p_i\log q_i\end{math}
-  
+
 \end{document}

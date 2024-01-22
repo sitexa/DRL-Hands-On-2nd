@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 import argparse
-import numpy as np
-
-from lib import environ, data, models
-
-import torch
 
 import matplotlib as mpl
+import numpy as np
+import torch
+from lib import data, environ, models
+
 mpl.use("Agg")
 import matplotlib.pyplot as plt
-
 
 EPSILON = 0.02
 
@@ -25,8 +23,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     prices = data.load_relative(args.data)
-    env = environ.StocksEnv({"TEST": prices}, bars_count=args.bars, reset_on_close=False, commission=args.commission,
-                            state_1d=args.conv, random_ofs_on_reset=False, reward_on_close=False, volumes=False)
+    env = environ.StocksEnv(
+        {"TEST": prices},
+        bars_count=args.bars,
+        reset_on_close=False,
+        commission=args.commission,
+        state_1d=args.conv,
+        random_ofs_on_reset=False,
+        reward_on_close=False,
+        volumes=False,
+    )
     if args.conv:
         net = models.DQNConv1D(env.observation_space.shape, env.action_space.n)
     else:

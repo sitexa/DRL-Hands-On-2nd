@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-import gym
 import time
-import numpy as np
 
+import gym
+import numpy as np
 import torch
 import torch.nn as nn
-
 from tensorboardX import SummaryWriter
-
 
 MAX_BATCH_EPISODES = 100
 MAX_BATCH_STEPS = 10000
@@ -18,12 +16,7 @@ LEARNING_RATE = 0.001
 class Net(nn.Module):
     def __init__(self, obs_size, action_size):
         super(Net, self).__init__()
-        self.net = nn.Sequential(
-            nn.Linear(obs_size, 32),
-            nn.ReLU(),
-            nn.Linear(32, action_size),
-            nn.Softmax(dim=1)
-        )
+        self.net = nn.Sequential(nn.Linear(obs_size, 32), nn.ReLU(), nn.Linear(32, action_size), nn.Softmax(dim=1))
 
     def forward(self, x):
         return self.net(x)
@@ -119,19 +112,14 @@ if __name__ == "__main__":
             print("Solved in %d steps" % step_idx)
             break
 
-        train_step(net, batch_noise, batch_reward,
-                   writer, step_idx)
+        train_step(net, batch_noise, batch_reward, writer, step_idx)
         writer.add_scalar("reward_mean", m_reward, step_idx)
-        writer.add_scalar("reward_std", np.std(batch_reward),
-                          step_idx)
-        writer.add_scalar("reward_max", np.max(batch_reward),
-                          step_idx)
-        writer.add_scalar("batch_episodes", len(batch_reward),
-                          step_idx)
+        writer.add_scalar("reward_std", np.std(batch_reward), step_idx)
+        writer.add_scalar("reward_max", np.max(batch_reward), step_idx)
+        writer.add_scalar("batch_episodes", len(batch_reward), step_idx)
         writer.add_scalar("batch_steps", batch_steps, step_idx)
         speed = batch_steps / (time.time() - t_start)
         writer.add_scalar("speed", speed, step_idx)
-        print("%d: reward=%.2f, speed=%.2f f/s" % (
-            step_idx, m_reward, speed))
+        print("%d: reward=%.2f, speed=%.2f f/s" % (step_idx, m_reward, speed))
 
     pass

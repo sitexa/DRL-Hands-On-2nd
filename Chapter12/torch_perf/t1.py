@@ -1,7 +1,8 @@
 # reproduce of PyTorch performance regression with tensors concatenation
-import torch
 import time
+
 import numpy as np
+import torch
 
 ITERS = 100
 BATCH = 128
@@ -17,9 +18,7 @@ def test_1(device):
         batch_t = torch.FloatTensor(batch).to(device)
         torch.cuda.synchronize()
     dt = time.time() - ts
-    print("1: Done %d iters in %.3f seconds = %.3f it/s" % (
-        ITERS, dt, ITERS/dt
-    ))
+    print("1: Done %d iters in %.3f seconds = %.3f it/s" % (ITERS, dt, ITERS / dt))
 
 
 def test_2(device):
@@ -31,9 +30,7 @@ def test_2(device):
         batch_t = torch.stack(batch).to(device)
         torch.cuda.synchronize()
     dt = time.time() - ts
-    print("2: Done %d iters in %.3f seconds = %.3f it/s" % (
-        ITERS, dt, ITERS/dt
-    ))
+    print("2: Done %d iters in %.3f seconds = %.3f it/s" % (ITERS, dt, ITERS / dt))
 
 
 def test_0(device):
@@ -45,9 +42,7 @@ def test_0(device):
         batch_t = torch.FloatTensor(np.array(batch, copy=False)).to(device)
         torch.cuda.synchronize()
     dt = time.time() - ts
-    print("0: Done %d iters in %.3f seconds = %.3f it/s" % (
-        ITERS, dt, ITERS/dt
-    ))
+    print("0: Done %d iters in %.3f seconds = %.3f it/s" % (ITERS, dt, ITERS / dt))
 
 
 # GTX 1080Ti, Ubuntu, Drivers 430.26

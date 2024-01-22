@@ -1,13 +1,18 @@
-import ptan
-import numpy as np
-import torch
-import torch.nn as nn
 from typing import Iterable, Optional
 
+import numpy as np
+import ptan
+import torch
+import torch.nn as nn
 
-def fc_from_hidden_sizes(input_size: int, hidden_sizes: Iterable[int], output_size: int,
-                         mid_activation: nn.Module = nn.ReLU,
-                         out_activation: Optional[nn.Module] = None) -> nn.Sequential:
+
+def fc_from_hidden_sizes(
+    input_size: int,
+    hidden_sizes: Iterable[int],
+    output_size: int,
+    mid_activation: nn.Module = nn.ReLU,
+    out_activation: Optional[nn.Module] = None,
+) -> nn.Sequential:
     layers = []
     prev_size = input_size
     for size in hidden_sizes:
@@ -21,26 +26,33 @@ def fc_from_hidden_sizes(input_size: int, hidden_sizes: Iterable[int], output_si
 
 
 class DDPGActor(nn.Module):
-    def __init__(self, obs_size: int, act_size: int, hidden_sizes: Iterable[int] = (20, )):
+    def __init__(self, obs_size: int, act_size: int, hidden_sizes: Iterable[int] = (20,)):
         super(DDPGActor, self).__init__()
 
-        self.net = fc_from_hidden_sizes(obs_size, hidden_sizes, act_size,
-                                        mid_activation=nn.ReLU, out_activation=nn.Tanh)
+        self.net = fc_from_hidden_sizes(
+            obs_size, hidden_sizes, act_size, mid_activation=nn.ReLU, out_activation=nn.Tanh
+        )
 
     def forward(self, x):
         return self.net(x)
 
 
 class DDPGCritic(nn.Module):
-    def __init__(self, obs_size: int, act_size: int,
-                 hidden_obs_sizes: Iterable[int] = (100, ),
-                 hidden_out_sizes: Iterable[int] = (100, 50)):
+    def __init__(
+        self,
+        obs_size: int,
+        act_size: int,
+        hidden_obs_sizes: Iterable[int] = (100,),
+        hidden_out_sizes: Iterable[int] = (100, 50),
+    ):
         super(DDPGCritic, self).__init__()
 
-        self.obs_net = fc_from_hidden_sizes(obs_size, hidden_obs_sizes[:-1], hidden_obs_sizes[-1],
-                                            mid_activation=nn.ReLU, out_activation=nn.ReLU)
-        self.out_net = fc_from_hidden_sizes(hidden_obs_sizes[-1] + act_size, hidden_out_sizes, 1,
-                                            mid_activation=nn.ReLU, out_activation=None)
+        self.obs_net = fc_from_hidden_sizes(
+            obs_size, hidden_obs_sizes[:-1], hidden_obs_sizes[-1], mid_activation=nn.ReLU, out_activation=nn.ReLU
+        )
+        self.out_net = fc_from_hidden_sizes(
+            hidden_obs_sizes[-1] + act_size, hidden_out_sizes, 1, mid_activation=nn.ReLU, out_activation=None
+        )
 
     def forward(self, x, a):
         obs = self.obs_net(x)
@@ -51,6 +63,7 @@ class AgentDDPG(ptan.agent.BaseAgent):
     """
     Agent implementing Orstein-Uhlenbeck exploration process
     """
+
     def __init__(self, net, device="cpu", ou_enabled=True, ou_mu=0.0, ou_teta=0.15, ou_sigma=0.2, ou_epsilon=1.0):
         self.net = net
         self.device = device

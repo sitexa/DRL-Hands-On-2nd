@@ -1,7 +1,7 @@
 import sys
 import time
-import numpy as np
 
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -16,21 +16,13 @@ class AtariA2C(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.policy = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, n_actions)
-        )
+        self.policy = nn.Sequential(nn.Linear(conv_out_size, 512), nn.ReLU(), nn.Linear(512, n_actions))
 
-        self.value = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1)
-        )
+        self.value = nn.Sequential(nn.Linear(conv_out_size, 512), nn.ReLU(), nn.Linear(512, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -63,9 +55,10 @@ class RewardTracker:
         self.ts = time.time()
         mean_reward = np.mean(self.total_rewards[-100:])
         epsilon_str = "" if epsilon is None else ", eps %.2f" % epsilon
-        print("%d: done %d games, mean reward %.3f, speed %.2f f/s%s" % (
-            frame, len(self.total_rewards), mean_reward, speed, epsilon_str
-        ))
+        print(
+            "%d: done %d games, mean reward %.3f, speed %.2f f/s%s"
+            % (frame, len(self.total_rewards), mean_reward, speed, epsilon_str)
+        )
         sys.stdout.flush()
         if epsilon is not None:
             self.writer.add_scalar("epsilon", epsilon, frame)
@@ -78,7 +71,7 @@ class RewardTracker:
         return False
 
 
-def unpack_batch(batch, net, last_val_gamma, device='cpu'):
+def unpack_batch(batch, net, last_val_gamma, device="cpu"):
     """
     Convert batch into training tensors
     :param batch:

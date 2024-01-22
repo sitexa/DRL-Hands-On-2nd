@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 import argparse
+
 import gym
-import pybullet_envs
-
-from lib import model
-
 import numpy as np
+import pybullet_envs
 import torch
-
+from lib import model
 
 ENV_ID = "MinitaurBulletEnv-v0"
 
@@ -19,7 +17,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     spec = gym.envs.registry.spec(args.env)
-    spec._kwargs['render'] = False
+    spec._kwargs["render"] = False
     env = gym.make(args.env)
     if args.record:
         env = gym.wrappers.Monitor(env, args.record)

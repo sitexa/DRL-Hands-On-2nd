@@ -17,10 +17,8 @@ DELTA_Z = (Vmax - Vmin) / (N_ATOMS - 1)
 
 
 class NoisyLinear(nn.Linear):
-    def __init__(self, in_features, out_features,
-                 sigma_init=0.017, bias=True):
-        super(NoisyLinear, self).__init__(
-            in_features, out_features, bias=bias)
+    def __init__(self, in_features, out_features, sigma_init=0.017, bias=True):
+        super(NoisyLinear, self).__init__(in_features, out_features, bias=bias)
         w = torch.full((out_features, in_features), sigma_init)
         self.sigma_weight = nn.Parameter(w)
         z = torch.zeros(out_features, in_features)
@@ -42,10 +40,8 @@ class NoisyLinear(nn.Linear):
         bias = self.bias
         if bias is not None:
             self.epsilon_bias.normal_()
-            bias = bias + self.sigma_bias * \
-                   self.epsilon_bias.data
-        v = self.sigma_weight * self.epsilon_weight.data + \
-            self.weight
+            bias = bias + self.sigma_bias * self.epsilon_bias.data
+        v = self.sigma_weight * self.epsilon_weight.data + self.weight
         return F.linear(input, v, bias)
 
 
@@ -55,10 +51,9 @@ class NoisyFactorizedLinear(nn.Linear):
 
     N.B. nn.Linear already initializes weight and bias to
     """
-    def __init__(self, in_features, out_features,
-                 sigma_zero=0.4, bias=True):
-        super(NoisyFactorizedLinear, self).__init__(
-            in_features, out_features, bias=bias)
+
+    def __init__(self, in_features, out_features, sigma_zero=0.4, bias=True):
+        super(NoisyFactorizedLinear, self).__init__(in_features, out_features, bias=bias)
         sigma_init = sigma_zero / math.sqrt(in_features)
         w = torch.full((out_features, in_features), sigma_init)
         self.sigma_weight = nn.Parameter(w)
@@ -74,8 +69,7 @@ class NoisyFactorizedLinear(nn.Linear):
         self.epsilon_input.normal_()
         self.epsilon_output.normal_()
 
-        func = lambda x: torch.sign(x) * \
-                         torch.sqrt(torch.abs(x))
+        func = lambda x: torch.sign(x) * torch.sqrt(torch.abs(x))
         eps_in = func(self.epsilon_input.data)
         eps_out = func(self.epsilon_output.data)
 
@@ -97,19 +91,12 @@ class NoisyDQN(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.noisy_layers = [
-            NoisyLinear(conv_out_size, 512),
-            NoisyLinear(512, n_actions)
-        ]
-        self.fc = nn.Sequential(
-            self.noisy_layers[0],
-            nn.ReLU(),
-            self.noisy_layers[1]
-        )
+        self.noisy_layers = [NoisyLinear(conv_out_size, 512), NoisyLinear(512, n_actions)]
+        self.fc = nn.Sequential(self.noisy_layers[0], nn.ReLU(), self.noisy_layers[1])
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -122,7 +109,7 @@ class NoisyDQN(nn.Module):
 
     def noisy_layers_sigma_snr(self):
         return [
-            ((layer.weight ** 2).mean().sqrt() / (layer.sigma_weight ** 2).mean().sqrt()).item()
+            ((layer.weight**2).mean().sqrt() / (layer.sigma_weight**2).mean().sqrt()).item()
             for layer in self.noisy_layers
         ]
 
@@ -134,13 +121,11 @@ class PrioReplayBuffer:
         self.capacity = buf_size
         self.pos = 0
         self.buffer = []
-        self.priorities = np.zeros(
-            (buf_size, ), dtype=np.float32)
+        self.priorities = np.zeros((buf_size,), dtype=np.float32)
         self.beta = BETA_START
 
     def update_beta(self, idx):
-        v = BETA_START + idx * (1.0 - BETA_START) / \
-            BETA_FRAMES
+        v = BETA_START + idx * (1.0 - BETA_START) / BETA_FRAMES
         self.beta = min(1.0, v)
         return self.beta
 
@@ -148,8 +133,7 @@ class PrioReplayBuffer:
         return len(self.buffer)
 
     def populate(self, count):
-        max_prio = self.priorities.max() if \
-            self.buffer else 1.0
+        max_prio = self.priorities.max() if self.buffer else 1.0
         for _ in range(count):
             sample = next(self.exp_source_iter)
             if len(self.buffer) < self.capacity:
@@ -163,23 +147,19 @@ class PrioReplayBuffer:
         if len(self.buffer) == self.capacity:
             prios = self.priorities
         else:
-            prios = self.priorities[:self.pos]
-        probs = prios ** self.prob_alpha
+            prios = self.priorities[: self.pos]
+        probs = prios**self.prob_alpha
 
         probs /= probs.sum()
-        indices = np.random.choice(len(self.buffer),
-                                   batch_size, p=probs)
+        indices = np.random.choice(len(self.buffer), batch_size, p=probs)
         samples = [self.buffer[idx] for idx in indices]
         total = len(self.buffer)
         weights = (total * probs[indices]) ** (-self.beta)
         weights /= weights.max()
-        return samples, indices, \
-               np.array(weights, dtype=np.float32)
+        return samples, indices, np.array(weights, dtype=np.float32)
 
-    def update_priorities(self, batch_indices,
-                          batch_priorities):
-        for idx, prio in zip(batch_indices,
-                             batch_priorities):
+    def update_priorities(self, batch_indices, batch_priorities):
+        for idx, prio in zip(batch_indices, batch_priorities):
             self.priorities[idx] = prio
 
 
@@ -188,26 +168,17 @@ class DuelingDQN(nn.Module):
         super(DuelingDQN, self).__init__()
 
         self.conv = nn.Sequential(
-            nn.Conv2d(input_shape[0], 32,
-                      kernel_size=8, stride=4),
+            nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.fc_adv = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, n_actions)
-        )
-        self.fc_val = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
+        self.fc_adv = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, n_actions))
+        self.fc_val = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -233,15 +204,11 @@ class DistributionalDQN(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.fc = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, n_actions * N_ATOMS)
-        )
+        self.fc = nn.Sequential(nn.Linear(conv_out_size, 512), nn.ReLU(), nn.Linear(512, n_actions * N_ATOMS))
 
         sups = torch.arange(Vmin, Vmax + DELTA_Z, DELTA_Z)
         self.register_buffer("supports", sups)
@@ -278,8 +245,7 @@ def distr_projection(next_distr, rewards, dones, gamma):
     "A Distributional Perspective on RL" paper
     """
     batch_size = len(rewards)
-    proj_distr = np.zeros((batch_size, N_ATOMS),
-                          dtype=np.float32)
+    proj_distr = np.zeros((batch_size, N_ATOMS), dtype=np.float32)
     delta_z = (Vmax - Vmin) / (N_ATOMS - 1)
     for atom in range(N_ATOMS):
         v = rewards + (Vmin + atom * delta_z) * gamma
@@ -288,17 +254,13 @@ def distr_projection(next_distr, rewards, dones, gamma):
         l = np.floor(b_j).astype(np.int64)
         u = np.ceil(b_j).astype(np.int64)
         eq_mask = u == l
-        proj_distr[eq_mask, l[eq_mask]] += \
-            next_distr[eq_mask, atom]
+        proj_distr[eq_mask, l[eq_mask]] += next_distr[eq_mask, atom]
         ne_mask = u != l
-        proj_distr[ne_mask, l[ne_mask]] += \
-            next_distr[ne_mask, atom] * (u - b_j)[ne_mask]
-        proj_distr[ne_mask, u[ne_mask]] += \
-            next_distr[ne_mask, atom] * (b_j - l)[ne_mask]
+        proj_distr[ne_mask, l[ne_mask]] += next_distr[ne_mask, atom] * (u - b_j)[ne_mask]
+        proj_distr[ne_mask, u[ne_mask]] += next_distr[ne_mask, atom] * (b_j - l)[ne_mask]
     if dones.any():
         proj_distr[dones] = 0.0
-        tz_j = np.minimum(
-            Vmax, np.maximum(Vmin, rewards[dones]))
+        tz_j = np.minimum(Vmax, np.maximum(Vmin, rewards[dones]))
         b_j = (tz_j - Vmin) / delta_z
         l = np.floor(b_j).astype(np.int64)
         u = np.ceil(b_j).astype(np.int64)
@@ -311,10 +273,8 @@ def distr_projection(next_distr, rewards, dones, gamma):
         ne_dones = dones.copy()
         ne_dones[dones] = ne_mask
         if ne_dones.any():
-            proj_distr[ne_dones, l[ne_mask]] = \
-                (u - b_j)[ne_mask]
-            proj_distr[ne_dones, u[ne_mask]] = \
-                (b_j - l)[ne_mask]
+            proj_distr[ne_dones, l[ne_mask]] = (u - b_j)[ne_mask]
+            proj_distr[ne_dones, u[ne_mask]] = (b_j - l)[ne_mask]
     return proj_distr
 
 
@@ -328,20 +288,12 @@ class RainbowDQN(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.fc_adv = nn.Sequential(
-            NoisyLinear(conv_out_size, 256),
-            nn.ReLU(),
-            NoisyLinear(256, n_actions)
-        )
-        self.fc_val = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
+        self.fc_adv = nn.Sequential(NoisyLinear(conv_out_size, 256), nn.ReLU(), NoisyLinear(256, n_actions))
+        self.fc_val = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))

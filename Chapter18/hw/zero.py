@@ -2,9 +2,8 @@
 Turns robot legs to zero positions
 """
 
-from libhw import servo
 import utime
-
+from libhw import servo
 
 PINS = ["B6", "B7", "B10", "B11"]
 INV = [True, False, True, False]

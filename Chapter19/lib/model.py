@@ -1,5 +1,5 @@
-import ptan
 import numpy as np
+import ptan
 import torch
 import torch.nn as nn
 
@@ -87,9 +87,8 @@ class AgentDDPG(ptan.agent.BaseAgent):
     """
     Agent implementing Orstein-Uhlenbeck exploration process
     """
-    def __init__(self, net, device="cpu", ou_enabled=True,
-                 ou_mu=0.0, ou_teta=0.15, ou_sigma=0.2,
-                 ou_epsilon=1.0):
+
+    def __init__(self, net, device="cpu", ou_enabled=True, ou_mu=0.0, ou_teta=0.15, ou_sigma=0.2, ou_epsilon=1.0):
         self.net = net
         self.device = device
         self.ou_enabled = ou_enabled
@@ -111,11 +110,9 @@ class AgentDDPG(ptan.agent.BaseAgent):
             new_a_states = []
             for a_state, action in zip(agent_states, actions):
                 if a_state is None:
-                    a_state = np.zeros(
-                        shape=action.shape, dtype=np.float32)
+                    a_state = np.zeros(shape=action.shape, dtype=np.float32)
                 a_state += self.ou_teta * (self.ou_mu - a_state)
-                a_state += self.ou_sigma * np.random.normal(
-                    size=action.shape)
+                a_state += self.ou_sigma * np.random.normal(size=action.shape)
 
                 action += self.ou_epsilon * a_state
                 new_a_states.append(a_state)

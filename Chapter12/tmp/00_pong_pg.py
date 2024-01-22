@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
-import gym
-import ptan
-import numpy as np
 import argparse
 import collections
-from tensorboardX import SummaryWriter
 
+import gym
+import numpy as np
+import ptan
 import torch
 import torch.nn.functional as F
 import torch.nn.utils as nn_utils
 import torch.optim as optim
-from torch.autograd import Variable
-
 from lib import common
+from tensorboardX import SummaryWriter
+from torch.autograd import Variable
 
 GAMMA = 0.99
 LEARNING_RATE = 0.0001
@@ -53,7 +52,7 @@ class MeanBuffer:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda")
-    parser.add_argument("-n", '--name', required=True, help="Name of the run")
+    parser.add_argument("-n", "--name", required=True, help="Name of the run")
     args = parser.parse_args()
 
     envs = [make_env() for _ in range(ENV_COUNT)]
@@ -118,9 +117,9 @@ if __name__ == "__main__":
             loss_policy_v = -log_prob_actions_v.mean()
 
             loss_policy_v.backward(retain_graph=True)
-            grads = np.concatenate([p.grad.data.cpu().numpy().flatten()
-                                    for p in net.parameters()
-                                    if p.grad is not None])
+            grads = np.concatenate(
+                [p.grad.data.cpu().numpy().flatten() for p in net.parameters() if p.grad is not None]
+            )
 
             prob_v = F.softmax(logits_v)
             entropy_v = -(prob_v * log_prob_v).sum(dim=1).mean()

@@ -1,6 +1,5 @@
-import ptan
 import numpy as np
-
+import ptan
 
 if __name__ == "__main__":
     q_vals = np.array([[1, 2, 3], [1, -1, 0]])
@@ -24,9 +23,5 @@ if __name__ == "__main__":
     selector = ptan.actions.ProbabilityActionSelector()
     print("Actions sampled from three prob distributions:")
     for _ in range(10):
-        acts = selector(np.array([
-            [0.1, 0.8, 0.1],
-            [0.0, 0.0, 1.0],
-            [0.5, 0.5, 0.0]
-        ]))
+        acts = selector(np.array([[0.1, 0.8, 0.1], [0.0, 0.0, 1.0], [0.5, 0.5, 0.0]]))
         print(acts)

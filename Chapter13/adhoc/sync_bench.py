@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
+import os
+import sys
 import time
 import timeit
 
 import gym
 import ptan
-import os
-import sys
-sys.path.append(os.getcwd())
-from lib import common
 
+sys.path.append(os.getcwd())
 import torch
 import torch.nn as nn
-
+from lib import common
 
 # Results:
 # Original sync, number=100, cuda=True, speed=7634.508 runs/s
@@ -35,7 +34,6 @@ import torch.nn as nn
 # New sync, number=1000, cuda=True, speed=6006.258 runs/s
 # New sync, number=10000, cuda=True, speed=6053.777 runs/s
 # New sync, number=100000, cuda=True, speed=6074.822 runs/s
-
 
 
 CUDA = True
@@ -65,9 +63,9 @@ if __name__ == "__main__":
     ns = globals()
     ns.update(locals())
     for number in [100, 1000, 10000, 100000]:
-        t = timeit.timeit('tgt_net.sync()', number=number, globals=ns)
+        t = timeit.timeit("tgt_net.sync()", number=number, globals=ns)
         print("Original sync, number=%d, cuda=%s, speed=%.3f runs/s" % (number, CUDA, number / t))
 
     for number in [100, 1000, 10000, 100000]:
-        t = timeit.timeit('new_sync(tgt_net.target_model, net)', number=number, globals=ns)
+        t = timeit.timeit("new_sync(tgt_net.target_model, net)", number=number, globals=ns)
         print("New sync, number=%d, cuda=%s, speed=%.3f runs/s" % (number, CUDA, number / t))

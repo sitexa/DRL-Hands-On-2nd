@@ -1,8 +1,9 @@
-import gym
-from typing import TypeVar
 import random
+from typing import TypeVar
 
-Action = TypeVar('Action')
+import gym
+
+Action = TypeVar("Action")
 
 
 class RandomActionWrapper(gym.ActionWrapper):

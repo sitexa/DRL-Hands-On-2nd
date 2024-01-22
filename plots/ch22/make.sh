@@ -26,4 +26,3 @@ set -x
 
 ../plot.py -i i2a-test-reward.csv -i a2c-test-reward.csv -o 13-01-test-reward-cmp.svg -x Steps -y "Test reward" -l I2A -l A2C
 ../plot.py -i i2a-test-steps.csv -i a2c-test-steps.csv -o 13-02-test-steps-cmp.svg -x Steps -y "Test steps" -l I2A -l A2C
-

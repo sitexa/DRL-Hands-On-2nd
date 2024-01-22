@@ -1,10 +1,11 @@
-import ptan
 import time
+from typing import Callable, Optional, Union
+
 import numpy as np
+import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Union, Callable, Optional
 
 from . import dqn_extra
 
@@ -33,9 +34,7 @@ class MountainCarNoisyNetsPPO(nn.Module):
     def __init__(self, obs_size, n_actions, hid_size: int = 128):
         super(MountainCarNoisyNetsPPO, self).__init__()
 
-        self.noisy_layers = [
-            dqn_extra.NoisyLinear(hid_size, n_actions)
-        ]
+        self.noisy_layers = [dqn_extra.NoisyLinear(hid_size, n_actions)]
 
         self.actor = nn.Sequential(
             nn.Linear(obs_size, hid_size),
@@ -61,8 +60,9 @@ def calc_adv_ref(values, dones, rewards, gamma, gae_lambda):
     last_gae = 0.0
     adv, ref = [], []
 
-    for val, next_val, done, reward in zip(reversed(values[:-1]), reversed(values[1:]),
-                                           reversed(dones[:-1]), reversed(rewards[:-1])):
+    for val, next_val, done, reward in zip(
+        reversed(values[:-1]), reversed(values[1:]), reversed(dones[:-1]), reversed(rewards[:-1])
+    ):
         if done:
             delta = reward - val
             last_gae = delta
@@ -76,12 +76,18 @@ def calc_adv_ref(values, dones, rewards, gamma, gae_lambda):
     return torch.FloatTensor(adv), torch.FloatTensor(ref)
 
 
-def batch_generator(exp_source: ptan.experience.ExperienceSource,
-                    net: nn.Module,
-                    trajectory_size: int, ppo_epoches: int,
-                    batch_size: int, gamma: float, gae_lambda: float,
-                    device: Union[torch.device, str] = "cpu", trim_trajectory: bool = True,
-                    new_batch_callable: Optional[Callable] = None):
+def batch_generator(
+    exp_source: ptan.experience.ExperienceSource,
+    net: nn.Module,
+    trajectory_size: int,
+    ppo_epoches: int,
+    batch_size: int,
+    gamma: float,
+    gae_lambda: float,
+    device: Union[torch.device, str] = "cpu",
+    trim_trajectory: bool = True,
+    new_batch_callable: Optional[Callable] = None,
+):
     trj_states = []
     trj_actions = []
     trj_rewards = []
@@ -93,11 +99,11 @@ def batch_generator(exp_source: ptan.experience.ExperienceSource,
         trj_rewards.append(exp.reward)
         trj_dones.append(exp.done)
         if exp.done:
-            last_done_index = len(trj_states)-1
+            last_done_index = len(trj_states) - 1
         if len(trj_states) < trajectory_size:
             continue
         # ensure that we have at least one full episode in the trajectory
-        if last_done_index is None or last_done_index == len(trj_states)-1:
+        if last_done_index is None or last_done_index == len(trj_states) - 1:
             continue
 
         if new_batch_callable is not None:
@@ -106,18 +112,17 @@ def batch_generator(exp_source: ptan.experience.ExperienceSource,
         # trim the trajectory till the last done plus one step (which will be discarded).
         # This increases convergence speed and stability
         if trim_trajectory:
-            trj_states = trj_states[:last_done_index+2]
-            trj_actions = trj_actions[:last_done_index + 2]
-            trj_rewards = trj_rewards[:last_done_index + 2]
-            trj_dones = trj_dones[:last_done_index + 2]
+            trj_states = trj_states[: last_done_index + 2]
+            trj_actions = trj_actions[: last_done_index + 2]
+            trj_rewards = trj_rewards[: last_done_index + 2]
+            trj_dones = trj_dones[: last_done_index + 2]
 
         trj_states_t = torch.FloatTensor(trj_states).to(device)
         trj_actions_t = torch.tensor(trj_actions).to(device)
         policy_t, trj_values_t = net(trj_states_t)
         trj_values_t = trj_values_t.squeeze()
 
-        adv_t, ref_t = calc_adv_ref(trj_values_t.data.cpu().numpy(),
-                                    trj_dones, trj_rewards, gamma, gae_lambda)
+        adv_t, ref_t = calc_adv_ref(trj_values_t.data.cpu().numpy(), trj_dones, trj_rewards, gamma, gae_lambda)
         adv_t = adv_t.to(device)
         ref_t = ref_t.to(device)
 
@@ -130,7 +135,7 @@ def batch_generator(exp_source: ptan.experience.ExperienceSource,
         trj_len = len(trj_states) - 1
         trj_len -= trj_len % batch_size
         trj_len += 1
-        indices = np.arange(0, trj_len-1)
+        indices = np.arange(0, trj_len - 1)
 
         # generate needed amount of batches
         for _ in range(ppo_epoches):
@@ -150,11 +155,18 @@ def batch_generator(exp_source: ptan.experience.ExperienceSource,
         trj_dones.clear()
 
 
-def batch_generator_distill(exp_source: ptan.experience.ExperienceSource,
-                            net: nn.Module, trajectory_size: int, ppo_epoches: int,
-                            batch_size: int, gamma: float, gae_lambda: float,
-                            device: Union[torch.device, str] = "cpu", trim_trajectory: bool = True,
-                            new_batch_callable: Optional[Callable] = None):
+def batch_generator_distill(
+    exp_source: ptan.experience.ExperienceSource,
+    net: nn.Module,
+    trajectory_size: int,
+    ppo_epoches: int,
+    batch_size: int,
+    gamma: float,
+    gae_lambda: float,
+    device: Union[torch.device, str] = "cpu",
+    trim_trajectory: bool = True,
+    new_batch_callable: Optional[Callable] = None,
+):
     """
     Same logic as batch_generator, but with distillery networks
     """
@@ -174,11 +186,11 @@ def batch_generator_distill(exp_source: ptan.experience.ExperienceSource,
         trj_rewards.append(exp.reward.sum())
         trj_dones.append(exp.done)
         if exp.done:
-            last_done_index = len(trj_states)-1
+            last_done_index = len(trj_states) - 1
         if len(trj_states) < trajectory_size:
             continue
         # ensure that we have at least one full episode in the trajectory
-        if last_done_index is None or last_done_index == len(trj_states)-1:
+        if last_done_index is None or last_done_index == len(trj_states) - 1:
             continue
 
         trj_dt = time.time() - trj_time
@@ -190,12 +202,12 @@ def batch_generator_distill(exp_source: ptan.experience.ExperienceSource,
         # trim the trajectory till the last done plus one step (which will be discarded).
         # This increases convergence speed and stability
         if trim_trajectory:
-            trj_states = trj_states[:last_done_index+2]
-            trj_actions = trj_actions[:last_done_index + 2]
-            trj_rewards_ext = trj_rewards_ext[:last_done_index + 2]
-            trj_rewards_int = trj_rewards_int[:last_done_index + 2]
-            trj_rewards = trj_rewards[:last_done_index + 2]
-            trj_dones = trj_dones[:last_done_index + 2]
+            trj_states = trj_states[: last_done_index + 2]
+            trj_actions = trj_actions[: last_done_index + 2]
+            trj_rewards_ext = trj_rewards_ext[: last_done_index + 2]
+            trj_rewards_int = trj_rewards_int[: last_done_index + 2]
+            trj_rewards = trj_rewards[: last_done_index + 2]
+            trj_dones = trj_dones[: last_done_index + 2]
 
         trj_states_t = torch.FloatTensor(trj_states).to(device)
         trj_actions_t = torch.tensor(trj_actions).to(device)
@@ -204,17 +216,16 @@ def batch_generator_distill(exp_source: ptan.experience.ExperienceSource,
         trj_values_int_t = trj_values_int_t.squeeze()
 
         # calculate combined rewards advantage
-        adv_t, _ = calc_adv_ref((trj_values_ext_t + trj_values_int_t).data.cpu().numpy(),
-                                trj_dones, trj_rewards, gamma, gae_lambda)
+        adv_t, _ = calc_adv_ref(
+            (trj_values_ext_t + trj_values_int_t).data.cpu().numpy(), trj_dones, trj_rewards, gamma, gae_lambda
+        )
         adv_t = adv_t.to(device)
 
         # intrinistic and extrinistic reference values
-        _, ref_ext_t = calc_adv_ref(trj_values_ext_t.data.cpu().numpy(),
-                                    trj_dones, trj_rewards_ext, gamma, gae_lambda)
+        _, ref_ext_t = calc_adv_ref(trj_values_ext_t.data.cpu().numpy(), trj_dones, trj_rewards_ext, gamma, gae_lambda)
         ref_ext_t = ref_ext_t.to(device)
 
-        _, ref_int_t = calc_adv_ref(trj_values_int_t.data.cpu().numpy(),
-                                    trj_dones, trj_rewards_int, gamma, gae_lambda)
+        _, ref_int_t = calc_adv_ref(trj_values_int_t.data.cpu().numpy(), trj_dones, trj_rewards_int, gamma, gae_lambda)
         ref_int_t = ref_int_t.to(device)
 
         logpolicy_t = F.log_softmax(policy_t, dim=1)
@@ -226,7 +237,7 @@ def batch_generator_distill(exp_source: ptan.experience.ExperienceSource,
         trj_len = len(trj_states) - 1
         trj_len -= trj_len % batch_size
         trj_len += 1
-        indices = np.arange(0, trj_len-1)
+        indices = np.arange(0, trj_len - 1)
         prep_dt = time.time() - prep_ts
 
         # generate needed amount of batches
@@ -286,30 +297,22 @@ class AtariBasePPO(nn.Module):
     """
     Dueling net
     """
+
     def __init__(self, input_shape, n_actions):
         super(AtariBasePPO, self).__init__()
 
         self.conv = nn.Sequential(
-            nn.Conv2d(input_shape[0], 32,
-                      kernel_size=8, stride=4),
+            nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.actor = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, n_actions)
-        )
-        self.critic = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
+        self.actor = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, n_actions))
+        self.critic = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -325,17 +328,17 @@ class AtariNoisyNetsPPO(nn.Module):
     """
     Dueling net
     """
+
     def __init__(self, input_shape, n_actions):
         super(AtariNoisyNetsPPO, self).__init__()
 
         self.conv = nn.Sequential(
-            nn.Conv2d(input_shape[0], 32,
-                      kernel_size=8, stride=4),
+            nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
@@ -349,11 +352,7 @@ class AtariNoisyNetsPPO(nn.Module):
             nn.ReLU(),
             self.noisy_layers[1],
         )
-        self.critic = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
+        self.critic = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -373,25 +372,21 @@ class AtariDistill(nn.Module):
     """
     Network to be distilled
     """
+
     def __init__(self, input_shape):
         super(AtariDistill, self).__init__()
 
         self.conv = nn.Sequential(
-            nn.Conv2d(input_shape[0], 32,
-                      kernel_size=8, stride=4),
+            nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.ff = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
+        self.ff = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -407,35 +402,23 @@ class AtariDistillPPO(nn.Module):
     """
     Dueling net
     """
+
     def __init__(self, input_shape, n_actions):
         super(AtariDistillPPO, self).__init__()
 
         self.conv = nn.Sequential(
-            nn.Conv2d(input_shape[0], 32,
-                      kernel_size=8, stride=4),
+            nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.actor = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, n_actions)
-        )
-        self.critic_ext = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
-        self.critic_int = nn.Sequential(
-            nn.Linear(conv_out_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
+        self.actor = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, n_actions))
+        self.critic_ext = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
+        self.critic_int = nn.Sequential(nn.Linear(conv_out_size, 256), nn.ReLU(), nn.Linear(256, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -445,5 +428,3 @@ class AtariDistillPPO(nn.Module):
         fx = x.float() / 256
         conv_out = self.conv(fx).view(fx.size()[0], -1)
         return self.actor(conv_out), self.critic_ext(conv_out), self.critic_int(conv_out)
-
-

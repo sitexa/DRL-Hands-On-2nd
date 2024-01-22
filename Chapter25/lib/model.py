@@ -1,10 +1,11 @@
-import ptan
 import math
+from typing import List, Tuple, Union
+
+import numpy as np
+import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-from typing import Union, Tuple, List
 
 
 class DQNModel(nn.Module):
@@ -14,15 +15,11 @@ class DQNModel(nn.Module):
         self.view_conv = nn.Sequential(
             nn.Conv2d(view_shape[0], 32, kernel_size=3, padding=0),
             nn.ReLU(),
-            nn.Conv2d(32, 16, kernel_size=2, padding=1),        # padding was added for deer model
+            nn.Conv2d(32, 16, kernel_size=2, padding=1),  # padding was added for deer model
             nn.ReLU(),
         )
         view_out_size = self._get_conv_out(view_shape)
-        self.fc = nn.Sequential(
-            nn.Linear(view_out_size + feats_shape[0], 128),
-            nn.ReLU(),
-            nn.Linear(128, n_actions)
-        )
+        self.fc = nn.Sequential(nn.Linear(view_out_size + feats_shape[0], 128), nn.ReLU(), nn.Linear(128, n_actions))
 
     def _get_conv_out(self, shape):
         o = self.view_conv(torch.zeros(1, *shape))
@@ -37,10 +34,8 @@ class DQNModel(nn.Module):
 
 
 class NoisyLinear(nn.Linear):
-    def __init__(self, in_features, out_features,
-                 sigma_init=0.017, bias=True):
-        super(NoisyLinear, self).__init__(
-            in_features, out_features, bias=bias)
+    def __init__(self, in_features, out_features, sigma_init=0.017, bias=True):
+        super(NoisyLinear, self).__init__(in_features, out_features, bias=bias)
         w = torch.full((out_features, in_features), sigma_init)
         self.sigma_weight = nn.Parameter(w)
         z = torch.zeros(out_features, in_features)
@@ -62,10 +57,8 @@ class NoisyLinear(nn.Linear):
             return super(NoisyLinear, self).forward(input)
         bias = self.bias
         if bias is not None:
-            bias = bias + self.sigma_bias * \
-                   self.epsilon_bias.data
-        v = self.sigma_weight * self.epsilon_weight.data + \
-            self.weight
+            bias = bias + self.sigma_bias * self.epsilon_bias.data
+        v = self.sigma_weight * self.epsilon_weight.data + self.weight
         return F.linear(input, v, bias)
 
     def sample_noise(self):
@@ -81,15 +74,11 @@ class DQNNoisyModel(nn.Module):
         self.view_conv = nn.Sequential(
             nn.Conv2d(view_shape[0], 32, kernel_size=3, padding=0),
             nn.ReLU(),
-            nn.Conv2d(32, 16, kernel_size=2, padding=1),        # padding was added for deer model
+            nn.Conv2d(32, 16, kernel_size=2, padding=1),  # padding was added for deer model
             nn.ReLU(),
         )
         view_out_size = self._get_conv_out(view_shape)
-        self.fc = nn.Sequential(
-            nn.Linear(view_out_size + feats_shape[0], 128),
-            nn.ReLU(),
-            NoisyLinear(128, n_actions)
-        )
+        self.fc = nn.Sequential(nn.Linear(view_out_size + feats_shape[0], 128), nn.ReLU(), NoisyLinear(128, n_actions))
 
     def _get_conv_out(self, shape):
         o = self.view_conv(torch.zeros(1, *shape))
@@ -107,11 +96,11 @@ class MAgentPreprocessor:
     """
     Transform the batch of observations from data.MAgentEnv into tuple of tensors, suitable for model call
     """
+
     def __init__(self, device: Union[torch.device, str] = "cpu"):
         self.device = device
 
-    def __call__(self, batch: List[Tuple[np.ndarray, np.ndarray]]) \
-            -> Tuple[torch.tensor, torch.tensor]:
+    def __call__(self, batch: List[Tuple[np.ndarray, np.ndarray]]) -> Tuple[torch.tensor, torch.tensor]:
         """
         Preprocess batch of observations from MAgentEnv
         :param batch: list of tuples with view numpy array and features numpy array
@@ -124,7 +113,7 @@ class MAgentPreprocessor:
 
 
 def unpack_batch(batch: List[ptan.experience.ExperienceFirstLast]):
-    states, actions, rewards, dones, last_states = [],[],[],[],[]
+    states, actions, rewards, dones, last_states = [], [], [], [], []
     for exp in batch:
         states.append(exp.state)
         actions.append(exp.action)
@@ -135,15 +124,11 @@ def unpack_batch(batch: List[ptan.experience.ExperienceFirstLast]):
         else:
             lstate = exp.last_state
         last_states.append(lstate)
-    return states, np.array(actions), \
-           np.array(rewards, dtype=np.float32), \
-           np.array(dones, dtype=np.uint8), \
-           last_states
+    return states, np.array(actions), np.array(rewards, dtype=np.float32), np.array(dones, dtype=np.uint8), last_states
 
 
 def calc_loss_dqn(batch, net, tgt_net, preprocessor, gamma, device="cpu"):
-    states, actions, rewards, dones, next_states = \
-        unpack_batch(batch)
+    states, actions, rewards, dones, next_states = unpack_batch(batch)
 
     states = preprocessor(states)
     next_states = preprocessor(next_states)
@@ -167,9 +152,14 @@ class GroupDQNAgent(ptan.agent.BaseAgent):
     """
     Similar to DQNAgent, but works with several models. Observations are tuples
     """
-    def __init__(self, dqn_models: List[DQNModel],
-                 action_selector, device="cpu",
-                 preprocessor=ptan.agent.default_states_preprocessor):
+
+    def __init__(
+        self,
+        dqn_models: List[DQNModel],
+        action_selector,
+        device="cpu",
+        preprocessor=ptan.agent.default_states_preprocessor,
+    ):
         self.dqn_models = dqn_models
         self.action_selector = action_selector
         self.preprocessor = preprocessor

@@ -24,7 +24,7 @@ Formally it could be written as \begin{math}\pi(s) = \argmax_a Q(s, a)\end{math}
 result of our policy \begin{math}\pi\end{math} at every state s is the action with the largest Q.
 
 In math notation, policy is usually represented as \begin{math}\pi(s)\end{math}, we’ll use this notation as well.
-  
+
 Page 4, Policy gradients
 
 We define policy gradient as \begin{math}\nabla J \approx \E[Q(s, a) \nabla\log \pi(a|s)]\end{math}. Of course, there is a
@@ -46,13 +46,13 @@ Page 5, REINFORCE
 \item Calculate loss function for all transitions \begin{math}\mathcal{L} =
   -\sum_{k,t}Q_{k,t}\log(\pi(s_{k,t}, a_{k,t}))\end{math}
 \item Perform SGD update of weights minimizing the loss.
-\item Repeat from step 2 until converged.  
+\item Repeat from step 2 until converged.
 \end{enumerate}
 
 
 Page 6, CartPole Example
 
-To do this efficiently, we calculate the reward from the end of the local reward list. Indeed, the last step of the episode will have the total reward equal to its local reward. The step before the last will have the total reward of 
+To do this efficiently, we calculate the reward from the end of the local reward list. Indeed, the last step of the episode will have the total reward equal to its local reward. The step before the last will have the total reward of
 \begin{math}r_{t-1} + \gamma r_t\end{math} (if t is an index of the last step).
 
 
@@ -75,7 +75,7 @@ In math notation, entropy of the policy is defined as: \begin{math}H(\pi) =
 
 Page 18, Results
 
-The entropy is decreasing over time from 0.69 to 0.52. The starting value corresponds to the maximum entropy with two actions, which is approximately 0.69: 
+The entropy is decreasing over time from 0.69 to 0.52. The starting value corresponds to the maximum entropy with two actions, which is approximately 0.69:
 \begin{equation*}
 H(\pi) = -\sum_a \pi(a|s)\log \pi(a|s) = - (\frac{1}{2} \log(\frac{1}{2}) + \frac{1}{2} \log(\frac{1}{2})) \approx 0.69
 \end{equation*}

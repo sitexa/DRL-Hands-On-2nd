@@ -1,11 +1,9 @@
 import collections
-import numpy as np
 
+import numpy as np
 import torch
 import torch.nn as nn
-
 from lib import game, mcts
-
 
 OBS_SHAPE = (2, game.GAME_ROWS, game.GAME_COLS)
 NUM_FILTERS = 64
@@ -18,62 +16,37 @@ class Net(nn.Module):
         self.conv_in = nn.Sequential(
             nn.Conv2d(input_shape[0], NUM_FILTERS, kernel_size=3, padding=1),
             nn.BatchNorm2d(NUM_FILTERS),
-            nn.LeakyReLU()
+            nn.LeakyReLU(),
         )
 
         # layers with residual
         self.conv_1 = nn.Sequential(
-            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1),
-            nn.BatchNorm2d(NUM_FILTERS),
-            nn.LeakyReLU()
+            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1), nn.BatchNorm2d(NUM_FILTERS), nn.LeakyReLU()
         )
         self.conv_2 = nn.Sequential(
-            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1),
-            nn.BatchNorm2d(NUM_FILTERS),
-            nn.LeakyReLU()
+            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1), nn.BatchNorm2d(NUM_FILTERS), nn.LeakyReLU()
         )
         self.conv_3 = nn.Sequential(
-            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1),
-            nn.BatchNorm2d(NUM_FILTERS),
-            nn.LeakyReLU()
+            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1), nn.BatchNorm2d(NUM_FILTERS), nn.LeakyReLU()
         )
         self.conv_4 = nn.Sequential(
-            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1),
-            nn.BatchNorm2d(NUM_FILTERS),
-            nn.LeakyReLU()
+            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1), nn.BatchNorm2d(NUM_FILTERS), nn.LeakyReLU()
         )
         self.conv_5 = nn.Sequential(
-            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1),
-            nn.BatchNorm2d(NUM_FILTERS),
-            nn.LeakyReLU()
+            nn.Conv2d(NUM_FILTERS, NUM_FILTERS, kernel_size=3, padding=1), nn.BatchNorm2d(NUM_FILTERS), nn.LeakyReLU()
         )
 
-        body_out_shape = (NUM_FILTERS, ) + input_shape[1:]
+        body_out_shape = (NUM_FILTERS,) + input_shape[1:]
 
         # value head
-        self.conv_val = nn.Sequential(
-            nn.Conv2d(NUM_FILTERS, 1, kernel_size=1),
-            nn.BatchNorm2d(1),
-            nn.LeakyReLU()
-        )
+        self.conv_val = nn.Sequential(nn.Conv2d(NUM_FILTERS, 1, kernel_size=1), nn.BatchNorm2d(1), nn.LeakyReLU())
         conv_val_size = self._get_conv_val_size(body_out_shape)
-        self.value = nn.Sequential(
-            nn.Linear(conv_val_size, 20),
-            nn.LeakyReLU(),
-            nn.Linear(20, 1),
-            nn.Tanh()
-        )
+        self.value = nn.Sequential(nn.Linear(conv_val_size, 20), nn.LeakyReLU(), nn.Linear(20, 1), nn.Tanh())
 
         # policy head
-        self.conv_policy = nn.Sequential(
-            nn.Conv2d(NUM_FILTERS, 2, kernel_size=1),
-            nn.BatchNorm2d(2),
-            nn.LeakyReLU()
-        )
+        self.conv_policy = nn.Sequential(nn.Conv2d(NUM_FILTERS, 2, kernel_size=1), nn.BatchNorm2d(2), nn.LeakyReLU())
         conv_policy_size = self._get_conv_policy_size(body_out_shape)
-        self.policy = nn.Sequential(
-            nn.Linear(conv_policy_size, actions_n)
-        )
+        self.policy = nn.Sequential(nn.Linear(conv_policy_size, actions_n))
 
     def _get_conv_val_size(self, shape):
         o = self.conv_val(torch.zeros(1, *shape))
@@ -156,9 +129,17 @@ def state_lists_to_batch(state_lists, who_moves_lists, device="cpu"):
 #
 
 
-def play_game(mcts_stores, replay_buffer, net1, net2,
-              steps_before_tau_0, mcts_searches, mcts_batch_size,
-              net1_plays_first=None, device="cpu"):
+def play_game(
+    mcts_stores,
+    replay_buffer,
+    net1,
+    net2,
+    steps_before_tau_0,
+    mcts_searches,
+    mcts_batch_size,
+    net1_plays_first=None,
+    device="cpu",
+):
     """
     Play one single game, memorizing transitions into the replay buffer
     :param mcts_stores: could be None or single MCTS or two MCTSes for individual net
@@ -195,10 +176,9 @@ def play_game(mcts_stores, replay_buffer, net1, net2,
 
     while result is None:
         mcts_stores[cur_player].search_batch(
-            mcts_searches, mcts_batch_size, state,
-            cur_player, nets[cur_player], device=device)
-        probs, _ = mcts_stores[cur_player].get_policy_value(
-            state, tau=tau)
+            mcts_searches, mcts_batch_size, state, cur_player, nets[cur_player], device=device
+        )
+        probs, _ = mcts_stores[cur_player].get_policy_value(state, tau=tau)
         game_history.append((state, cur_player, probs))
         action = np.random.choice(game.GAME_COLS, p=probs)
         if action not in game.possible_moves(state):
@@ -208,7 +188,7 @@ def play_game(mcts_stores, replay_buffer, net1, net2,
             result = 1
             net1_result = 1 if cur_player == 0 else -1
             break
-        cur_player = 1-cur_player
+        cur_player = 1 - cur_player
         # check the draw case
         if len(game.possible_moves(state)) == 0:
             result = 0
@@ -220,9 +200,7 @@ def play_game(mcts_stores, replay_buffer, net1, net2,
 
     if replay_buffer is not None:
         for state, cur_player, probs in reversed(game_history):
-            replay_buffer.append(
-                (state, cur_player, probs, result)
-            )
+            replay_buffer.append((state, cur_player, probs, result))
             result = -result
 
     return net1_result, step

@@ -1,5 +1,4 @@
 import numpy as np
-
 import torch
 
 
@@ -16,8 +15,7 @@ def set_flat_params_to(model, flat_params):
     prev_ind = 0
     for param in model.parameters():
         flat_size = int(np.prod(list(param.size())))
-        param.data.copy_(
-            flat_params[prev_ind:prev_ind + flat_size].view(param.size()))
+        param.data.copy_(flat_params[prev_ind : prev_ind + flat_size].view(param.size()))
         prev_ind += flat_size
 
 
@@ -40,15 +38,9 @@ def conjugate_gradients(Avp, b, nsteps, residual_tol=1e-10, device="cpu"):
     return x
 
 
-def linesearch(model,
-               f,
-               x,
-               fullstep,
-               expected_improve_rate,
-               max_backtracks=10,
-               accept_ratio=.1):
+def linesearch(model, f, x, fullstep, expected_improve_rate, max_backtracks=10, accept_ratio=0.1):
     fval = f().data
-    for (_n_backtracks, stepfrac) in enumerate(.5**np.arange(max_backtracks)):
+    for _n_backtracks, stepfrac in enumerate(0.5 ** np.arange(max_backtracks)):
         xnew = x + fullstep * stepfrac
         set_flat_params_to(model, xnew)
         newfval = f().data
@@ -90,8 +82,7 @@ def trpo_step(model, get_loss, get_kl, max_kl, damping, device="cpu"):
     neggdotstepdir = (-loss_grad * stepdir).sum(0, keepdim=True)
 
     prev_params = get_flat_params_from(model)
-    success, new_params = linesearch(model, get_loss, prev_params, fullstep,
-                                     neggdotstepdir / lm[0])
+    success, new_params = linesearch(model, get_loss, prev_params, fullstep, neggdotstepdir / lm[0])
     set_flat_params_to(model, new_params)
 
     return loss

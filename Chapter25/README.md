@@ -12,5 +12,3 @@ Setup required prerequisites mentioned in https://github.com/geek-ai/MAgent
 cd MAgent
 bash build.sh
 ```
-
-

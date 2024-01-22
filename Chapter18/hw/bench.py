@@ -1,5 +1,4 @@
 import utime
-
 from libhw import t1 as model
 
 INPUT_SIZE = 28

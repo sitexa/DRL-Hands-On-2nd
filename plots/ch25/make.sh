@@ -19,5 +19,3 @@
 ../plot.py -i both-tiger-loss.csv -o both-tiger-loss.svg -x Steps -y "Loss, tiger net"
 ../plot.py -i both-reward-deer.csv -o both-deer-reward.svg -x Steps -y "Test reward, deers"
 ../plot.py -i both-reward-tiger.csv -o both-tiger-reward.svg -x Steps -y "Test reward, tiger"
-
-

@@ -5,7 +5,7 @@
 Sometimes WoB docker process crashes with the following stack trace:
 ```
 [2018-01-19 15:51:40,618] [instruction] Sent env text Create a line that bisects the angle evenly in two, then press submit.
-[2018-01-19 15:51:40,618] instruction generated 
+[2018-01-19 15:51:40,618] instruction generated
 Namespace(env_id='wob.mini.ClickShape-v0', fps=15, idle_timeout=None, mode='ENV', verbosity=0)
 [EnvController] found 80 miniwob envs
 Launching new Chrome process...
@@ -29,12 +29,12 @@ TypeError: unsupported operand type(s) for +: 'NoneType' and 'int'
 ```
 
 As there is no open-sourced version of WoB or other Universe docker images,
- the only way to fix this is to change the image directly. Below are the 
+ the only way to fix this is to change the image directly. Below are the
  instruction how to do this.
 
 Another issue found a bit later is that reward proxy daemon is constantly overwrites the reward data.
 This problem is fixed by the second patch.
- 
+
 ## Starting the image
 
 Start WoB container by running
@@ -50,7 +50,7 @@ d521098d9c48        quay.io/openai/universe.world-of-bits:0.20.0   "/app/univers
 ```
 
 Remember the container ID, we'll use it later. In my case it's d521098d9c48.
- 
+
 ## Patch the image
 
 Apply the image with provided patch 01_wob_crash-fix.patch by running:
@@ -86,6 +86,6 @@ REPOSITORY                              TAG                 IMAGE ID            
 Now you can kill existing container with ``docker kill d521098d9c48`` and use new
 image to start new containers like this:
 ```bash
-docker run -d -p 5900:5900 -p 15900:15900 --privileged --ipc host --cap-add SYS_ADMIN 037a8fb6a286 
-docker run -d -p 5901:5900 -p 15901:15900 --privileged --ipc host --cap-add SYS_ADMIN 037a8fb6a286 
+docker run -d -p 5900:5900 -p 15900:15900 --privileged --ipc host --cap-add SYS_ADMIN 037a8fb6a286
+docker run -d -p 5901:5900 -p 15901:15900 --privileged --ipc host --cap-add SYS_ADMIN 037a8fb6a286
 ```

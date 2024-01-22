@@ -1,7 +1,7 @@
 // frame for short four-legged robot (dimensions for pyboard hardware)
 // History:
 // v1: Fusion360, check 01_trivial dir
-// v2: openscad: 
+// v2: openscad:
 //     - inverted servos support
 //     - solid holder for IMU unit
 
@@ -28,7 +28,7 @@ module servo(up_extrude = 1) {
     translate([-SERVO_EARS_THICK*2, SERVO_LENGTH + SERVO_EARS_LENGTH/2, SERVO_THICK/2])
     rotate([0, 90, 0])
     cylinder(SERVO_HOLE_LENGTH + SERVO_EARS_THICK*2, d=SERVO_HOLE_D, $fn=10);
-    
+
     // cable
     translate([SERVO_WIDTH-SERVO_WIRE_THICK+0.7, SERVO_WIRE_THICK/2+.5, SERVO_THICK/3])
     rotate([0, 0, -45])
@@ -79,15 +79,15 @@ module frame_base() {
     difference() {
         union() {
             cube([BASE_WIDTH, BASE_LENGTH, BASE_THICK]);
-            
+
             // board holder
             translate([0, BOARD_LENGTH, BASE_THICK])
             board_holder();
         }
-        
+
         translate([SERVO_EARS_THICK, SERVO_EARS_LENGTH, BASE_UNDER_SERVO_DIM])
         servo(up_extrude=3);
-        
+
         translate([SERVO_EARS_THICK, BASE_LENGTH-SERVO_EARS_LENGTH, BASE_UNDER_SERVO_DIM])
         mirror([0, 1, 0])
         servo(up_extrude=3);
@@ -99,10 +99,10 @@ module frame_base() {
             mirror([0, 1, 0])
             translate([SERVO_EARS_THICK, -BASE_LENGTH+SERVO_EARS_LENGTH, BASE_UNDER_SERVO_DIM])
             servo(up_extrude=3);
-        }        
-        
+        }
+
         translate([SERVO_WIDTH + SERVO_EARS_THICK + BASE_INNER_THICK, BASE_INNER_THICK, 0])
-        cube([BASE_WIDTH - SERVO_WIDTH*2 - SERVO_EARS_THICK*2 - BASE_INNER_THICK*2, 
+        cube([BASE_WIDTH - SERVO_WIDTH*2 - SERVO_EARS_THICK*2 - BASE_INNER_THICK*2,
               BASE_LENGTH - BASE_INNER_THICK*2, BASE_THICK + HOLDER_THICK]);
 
         // board screw holes
@@ -113,19 +113,19 @@ module frame_base() {
             cylinder(BOARD_SCREW_DEPTH, d=BOARD_SCREW_D, $fn=10);
         }
     }
-        
-    
+
+
 }
 
 module imu_holder(thickness) {
     // grip offsets
     linear_extrude(thickness)
     polygon([
-        [4.3, 0], 
+        [4.3, 0],
         [4.3, 10],
-        [2.0, 10], [2.0, 12], 
+        [2.0, 10], [2.0, 12],
         [4.3, 14], [0.0, 14],
-        [0.0, 0], 
+        [0.0, 0],
     ]);
 }
 
@@ -136,7 +136,7 @@ IMU_THICK = 1.7;
 module imu_board() {
     x_ofs = (BASE_WIDTH - IMU_WIDTH)/2;
     y_ofs = (BASE_LENGTH - IMU_LENGTH)/2;
-    
+
 //    translate([x_ofs, y_ofs, 34])
     translate([2, 0, 0])
     cube([IMU_WIDTH, IMU_LENGTH, IMU_THICK]);

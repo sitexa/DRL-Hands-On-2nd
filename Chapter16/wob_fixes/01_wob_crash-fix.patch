@@ -7,5 +7,5 @@
 -            reward = reward_client + reward_server
 +            reward = (0 if reward_client is None else reward_client) + (0 if reward_server is None else reward_server)
              done = done_client or done_server # if one of them quit, the env ends.
- 
+
              if done:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import gym
 import collections
+
+import gym
 from tensorboardX import SummaryWriter
 
 ENV_NAME = "FrozenLake-v0"
@@ -35,7 +36,7 @@ class Agent:
         best_v, _ = self.best_value_and_action(next_s)
         new_v = r + GAMMA * best_v
         old_v = self.values[(s, a)]
-        self.values[(s, a)] = old_v * (1-ALPHA) + new_v * ALPHA
+        self.values[(s, a)] = old_v * (1 - ALPHA) + new_v * ALPHA
 
     def play_episode(self, env):
         total_reward = 0.0
@@ -68,8 +69,7 @@ if __name__ == "__main__":
         reward /= TEST_EPISODES
         writer.add_scalar("reward", reward, iter_no)
         if reward > best_reward:
-            print("Best reward updated %.3f -> %.3f" % (
-                best_reward, reward))
+            print("Best reward updated %.3f -> %.3f" % (best_reward, reward))
             best_reward = reward
         if reward > 0.80:
             print("Solved in %d iterations!" % iter_no)

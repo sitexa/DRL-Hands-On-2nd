@@ -1,13 +1,13 @@
-import ptan
 import logging
 import pickle
-import numpy as np
-from nltk.tokenize import TweetTokenizer
 
+import numpy as np
+import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils.rnn as rnn_utils
+from nltk.tokenize import TweetTokenizer
 
 MM_EMBEDDINGS_DIM = 50
 MM_HIDDEN_SIZE = 128
@@ -42,8 +42,7 @@ class Model(nn.Module):
 
 
 class ModelMultimodal(nn.Module):
-    def __init__(self, input_shape, n_actions,
-                 max_dict_size=MM_MAX_DICT_SIZE):
+    def __init__(self, input_shape, n_actions, max_dict_size=MM_MAX_DICT_SIZE):
         super(ModelMultimodal, self).__init__()
 
         self.conv = nn.Sequential(
@@ -56,13 +55,10 @@ class ModelMultimodal(nn.Module):
         conv_out_size = self._get_conv_out(input_shape)
 
         self.emb = nn.Embedding(max_dict_size, MM_EMBEDDINGS_DIM)
-        self.rnn = nn.LSTM(MM_EMBEDDINGS_DIM, MM_HIDDEN_SIZE,
-                           batch_first=True)
+        self.rnn = nn.LSTM(MM_EMBEDDINGS_DIM, MM_HIDDEN_SIZE, batch_first=True)
 
-        self.policy = nn.Linear(
-            conv_out_size + MM_HIDDEN_SIZE*2, n_actions)
-        self.value = nn.Linear(
-            conv_out_size + MM_HIDDEN_SIZE*2, 1)
+        self.policy = nn.Linear(conv_out_size + MM_HIDDEN_SIZE * 2, n_actions)
+        self.value = nn.Linear(conv_out_size + MM_HIDDEN_SIZE * 2, 1)
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -71,8 +67,7 @@ class ModelMultimodal(nn.Module):
     def _concat_features(self, img_out, rnn_hidden):
         batch_size = img_out.size()[0]
         if isinstance(rnn_hidden, tuple):
-            flat_h = list(map(lambda t: t.view(batch_size, -1),
-                              rnn_hidden))
+            flat_h = list(map(lambda t: t.view(batch_size, -1), rnn_hidden))
             rnn_h = torch.cat(flat_h, dim=1)
         else:
             rnn_h = rnn_hidden.view(batch_size, -1)
@@ -84,8 +79,7 @@ class ModelMultimodal(nn.Module):
 
         # deal with text data
         emb_out = self.emb(x_text.data)
-        emb_out_seq = rnn_utils.PackedSequence(
-            emb_out, x_text.batch_sizes)
+        emb_out_seq = rnn_utils.PackedSequence(emb_out, x_text.batch_sizes)
         rnn_out, rnn_h = self.rnn(emb_out_seq)
 
         # extract image features
@@ -99,8 +93,7 @@ class ModelMultimodal(nn.Module):
 class MultimodalPreprocessor:
     log = logging.getLogger("MulitmodalPreprocessor")
 
-    def __init__(self, max_dict_size=MM_MAX_DICT_SIZE,
-                 device="cpu"):
+    def __init__(self, max_dict_size=MM_MAX_DICT_SIZE, device="cpu"):
         self.max_dict_size = max_dict_size
         self.token_to_id = {TOKEN_UNK: 0}
         self.next_id = 1
@@ -130,17 +123,14 @@ class MultimodalPreprocessor:
         # images
         img_v = torch.FloatTensor(img_batch).to(self.device)
         # sequences
-        seq_arr = np.zeros(shape=(len(seq_batch),
-                                  max(len(seq_batch[0]), 1)),
-                           dtype=np.int64)
+        seq_arr = np.zeros(shape=(len(seq_batch), max(len(seq_batch[0]), 1)), dtype=np.int64)
         for idx, seq in enumerate(seq_batch):
-            seq_arr[idx, :len(seq)] = seq
+            seq_arr[idx, : len(seq)] = seq
             # Map empty sequences into single #UNK token
             if len(seq) == 0:
                 lens[idx] = 1
         seq_v = torch.LongTensor(seq_arr).to(self.device)
-        seq_p = rnn_utils.pack_padded_sequence(
-            seq_v, lens, batch_first=True)
+        seq_p = rnn_utils.pack_padded_sequence(seq_v, lens, batch_first=True)
         return img_v, seq_p
 
     def tokens_to_idx(self, tokens):
@@ -149,9 +139,7 @@ class MultimodalPreprocessor:
             idx = self.token_to_id.get(token)
             if idx is None:
                 if self.next_id == self.max_dict_size:
-                    self.log.warning(
-                        "Maximum size of dict reached, token "
-                        "'%s' converted to #UNK token", token)
+                    self.log.warning("Maximum size of dict reached, token " "'%s' converted to #UNK token", token)
                     idx = 0
                 else:
                     idx = self.next_id
@@ -161,7 +149,7 @@ class MultimodalPreprocessor:
         return res
 
     def save(self, file_name):
-        with open(file_name, 'wb') as fd:
+        with open(file_name, "wb") as fd:
             pickle.dump(self.token_to_id, fd)
             pickle.dump(self.max_dict_size, fd)
             pickle.dump(self.next_id, fd)
@@ -179,9 +167,9 @@ class MultimodalPreprocessor:
             return res
 
 
-def train_demo(net, optimizer, batch, writer, step_idx,
-               preprocessor=ptan.agent.default_states_preprocessor,
-               device="cpu"):
+def train_demo(
+    net, optimizer, batch, writer, step_idx, preprocessor=ptan.agent.default_states_preprocessor, device="cpu"
+):
     """
     Train net on demonstration batch
     """
@@ -196,4 +184,3 @@ def train_demo(net, optimizer, batch, writer, step_idx,
     loss_v.backward()
     optimizer.step()
     writer.add_scalar("demo_loss", loss_v.item(), step_idx)
-

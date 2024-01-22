@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-import gym
 import collections
+
+import gym
 from tensorboardX import SummaryWriter
 
 ENV_NAME = "FrozenLake-v0"
-#ENV_NAME = "FrozenLake8x8-v0"      # uncomment for larger version
+# ENV_NAME = "FrozenLake8x8-v0"      # uncomment for larger version
 GAMMA = 0.9
 TEST_EPISODES = 20
 
@@ -14,8 +15,7 @@ class Agent:
         self.env = gym.make(ENV_NAME)
         self.state = self.env.reset()
         self.rewards = collections.defaultdict(float)
-        self.transits = collections.defaultdict(
-            collections.Counter)
+        self.transits = collections.defaultdict(collections.Counter)
         self.values = collections.defaultdict(float)
 
     def play_n_random_steps(self, count):
@@ -24,8 +24,7 @@ class Agent:
             new_state, reward, is_done, _ = self.env.step(action)
             self.rewards[(self.state, action, new_state)] = reward
             self.transits[(self.state, action)][new_state] += 1
-            self.state = self.env.reset() \
-                if is_done else new_state
+            self.state = self.env.reset() if is_done else new_state
 
     def calc_action_value(self, state, action):
         target_counts = self.transits[(state, action)]
@@ -62,10 +61,7 @@ class Agent:
 
     def value_iteration(self):
         for state in range(self.env.observation_space.n):
-            state_values = [
-                self.calc_action_value(state, action)
-                for action in range(self.env.action_space.n)
-            ]
+            state_values = [self.calc_action_value(state, action) for action in range(self.env.action_space.n)]
             self.values[state] = max(state_values)
 
 
@@ -87,8 +83,7 @@ if __name__ == "__main__":
         reward /= TEST_EPISODES
         writer.add_scalar("reward", reward, iter_no)
         if reward > best_reward:
-            print("Best reward updated %.3f -> %.3f" % (
-                best_reward, reward))
+            print("Best reward updated %.3f -> %.3f" % (best_reward, reward))
             best_reward = reward
         if reward > 0.80:
             print("Solved in %d iterations!" % iter_no)

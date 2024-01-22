@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
+import argparse
+import os
+import time
+
 import gym
 import gym.wrappers
-import ptan
-import time
-import torch
-import torch.optim as optim
-import torch.nn.functional as F
 import numpy as np
-import argparse
+import ptan
+import torch
+import torch.nn.functional as F
+import torch.optim as optim
+from lib import ddpg, microtaur
 from tensorboardX import SummaryWriter
-
-import os
-
-from lib import microtaur, ddpg
-
 
 TIME_LIMIT = 1000
 REPLAY_SIZE = 100000
@@ -26,7 +24,7 @@ TEST_ITERS = 1000
 
 
 def make_env(reward_scheme: microtaur.RewardScheme, zero_yaw: bool = False):
-    env = gym.make(microtaur.ENV_ID, reward_scheme=reward_scheme, zero_yaw = zero_yaw)
+    env = gym.make(microtaur.ENV_ID, reward_scheme=reward_scheme, zero_yaw=zero_yaw)
     assert isinstance(env, gym.wrappers.TimeLimit)
     env._max_episode_steps = TIME_LIMIT
     if OBS_HISTORY_STEPS > 1:
@@ -57,11 +55,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
-    parser.add_argument("--cuda", default=False, action='store_true', help="Use cuda for training")
+    parser.add_argument("--cuda", default=False, action="store_true", help="Use cuda for training")
     reward_schemes = [r.name for r in microtaur.RewardScheme]
-    parser.add_argument("--reward", default='Height', choices=reward_schemes,
-                        help="Reward scheme to use, one of: %s" % reward_schemes)
-    parser.add_argument("--zero-yaw", default=False, action='store_true', help="Pass zero yaw to observation")
+    parser.add_argument(
+        "--reward", default="Height", choices=reward_schemes, help="Reward scheme to use, one of: %s" % reward_schemes
+    )
+    parser.add_argument("--zero-yaw", default=False, action="store_true", help="Pass zero yaw to observation")
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
 
@@ -134,8 +133,7 @@ if __name__ == "__main__":
                 if frame_idx % TEST_ITERS == 0:
                     ts = time.time()
                     rewards, steps = test_net(act_net, test_env, device=device)
-                    print("Test done in %.2f sec, reward %.3f, steps %d" % (
-                        time.time() - ts, rewards, steps))
+                    print("Test done in %.2f sec, reward %.3f, steps %d" % (time.time() - ts, rewards, steps))
                     writer.add_scalar("test_reward", rewards, frame_idx)
                     writer.add_scalar("test_steps", steps, frame_idx)
                     if best_reward is None or best_reward < rewards:

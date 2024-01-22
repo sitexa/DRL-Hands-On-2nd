@@ -8,4 +8,3 @@ set -x
 
 ../plot.py -i cv-reward_train.csv -o cv-reward_train.svg -x Episodes -y Reward
 ../plot.py -i cv-reward_val.csv -o cv-reward_val.svg
-

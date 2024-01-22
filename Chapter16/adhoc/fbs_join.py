@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 import os
 import sys
+
 sys.path.append(os.getcwd())
 sys.path.append("..")
 import argparse
 import collections
 
-from lib.ksy import rfp_client, rfp_server
 from lib import vnc_demo
-
+from lib.ksy import rfp_client, rfp_server
+from PIL import Image, ImageDraw
 from universe.spaces import vnc_event
 from universe.vncdriver import server_messages
-
-from PIL import Image, ImageDraw
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -21,13 +19,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     file_name = os.path.join(args.demo, "client.fbs")
-    client_header, client_messages = \
-        vnc_demo.read_fbp_file(file_name, rfp_client.RfpClient, rfp_client.RfpClient.Header, rfp_client.RfpClient.Message)
+    client_header, client_messages = vnc_demo.read_fbp_file(
+        file_name, rfp_client.RfpClient, rfp_client.RfpClient.Header, rfp_client.RfpClient.Message
+    )
     print("Client file processed, it has %d messages" % len(client_messages))
 
     file_name = os.path.join(args.demo, "server.fbs")
-    srv_header, srv_messages = \
-        vnc_demo.read_fbp_file(file_name, rfp_server.RfpServer, rfp_server.RfpServer.Header, rfp_server.RfpServer.Message)
+    srv_header, srv_messages = vnc_demo.read_fbp_file(
+        file_name, rfp_server.RfpServer, rfp_server.RfpServer.Header, rfp_server.RfpServer.Message
+    )
     print("Server file processed, it has %d messages" % len(srv_messages))
 
     client = vnc_demo.Client(srv_header)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                 numpy_screen.flip()
 
         # pass client action to framebuffer to track cursor position
-        if msg.message_type == 5:   # TODO: enum
+        if msg.message_type == 5:  # TODO: enum
             event = vnc_event.PointerEvent(msg.message_body.pos_x, msg.message_body.pos_y, msg.message_body.button_mask)
             numpy_screen.flip()
             numpy_screen.apply_action(event)
@@ -81,11 +81,8 @@ if __name__ == "__main__":
                     size = 10
                 else:
                     size = 2
-                draw.ellipse(
-                    (x_ofs, y_ofs, x_ofs + size, y_ofs + size),
-                    (0, 0, 255, 128))
+                draw.ellipse((x_ofs, y_ofs, x_ofs + size, y_ofs + size), (0, 0, 255, 128))
                 img.save(n)
                 last_save = ts
 
     pass
-

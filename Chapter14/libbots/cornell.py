@@ -2,8 +2,8 @@
 Cornel Movies Dialogs Corpus
 https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html
 """
-import os
 import logging
+import os
 
 from . import utils
 
@@ -12,7 +12,7 @@ DATA_DIR = "data/cornell"
 SEPARATOR = "+++$+++"
 
 
-def load_dialogues(data_dir=DATA_DIR, genre_filter=''):
+def load_dialogues(data_dir=DATA_DIR, genre_filter=""):
     """
     Load dialogues from cornell data
     :return: list of list of list of words
@@ -31,7 +31,7 @@ def load_dialogues(data_dir=DATA_DIR, genre_filter=''):
 def iterate_entries(data_dir, file_name):
     with open(os.path.join(data_dir, file_name), "rb") as fd:
         for l in fd:
-            l = str(l, encoding='utf-8', errors='ignore')
+            l = str(l, encoding="utf-8", errors="ignore")
             yield list(map(str.strip, l.split(SEPARATOR)))
 
 

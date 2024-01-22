@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-import sys
-import gym
-import pybullet_envs
 import collections
 import copy
+import sys
 import time
+
+import gym
 import numpy as np
-
+import pybullet_envs
 import torch
-import torch.nn as nn
 import torch.multiprocessing as mp
-
+import torch.nn as nn
 from tensorboardX import SummaryWriter
-
 
 NOISE_STD = 0.01
 POPULATION_SIZE = 2000
@@ -66,15 +64,13 @@ def mutate_net(net, seed, copy_net=True):
 
 def build_net(env, seeds):
     torch.manual_seed(seeds[0])
-    net = Net(env.observation_space.shape[0],
-              env.action_space.shape[0])
+    net = Net(env.observation_space.shape[0], env.action_space.shape[0])
     for seed in seeds[1:]:
         net = mutate_net(net, seed, copy_net=False)
     return net
 
 
-OutputItem = collections.namedtuple(
-    'OutputItem', field_names=['seeds', 'reward', 'steps'])
+OutputItem = collections.namedtuple("OutputItem", field_names=["seeds", "reward", "steps"])
 
 
 def worker_func(input_queue, output_queue):
@@ -97,13 +93,12 @@ def worker_func(input_queue, output_queue):
                 net = build_net(env, net_seeds)
             new_cache[net_seeds] = net
             reward, steps = evaluate(env, net)
-            output_queue.put(OutputItem(
-                seeds=net_seeds, reward=reward, steps=steps))
+            output_queue.put(OutputItem(seeds=net_seeds, reward=reward, steps=steps))
         cache = new_cache
 
 
 if __name__ == "__main__":
-    mp.set_start_method('spawn')
+    mp.set_start_method("spawn")
     writer = SummaryWriter(comment="-cheetah-ga")
 
     input_queues = []
@@ -141,8 +136,10 @@ if __name__ == "__main__":
         writer.add_scalar("gen_seconds", time.time() - t_start, gen_idx)
         speed = batch_steps / (time.time() - t_start)
         writer.add_scalar("speed", speed, gen_idx)
-        print("%d: reward_mean=%.2f, reward_max=%.2f, reward_std=%.2f, speed=%.2f f/s" % (
-            gen_idx, reward_mean, reward_max, reward_std, speed))
+        print(
+            "%d: reward_mean=%.2f, reward_max=%.2f, reward_std=%.2f, speed=%.2f f/s"
+            % (gen_idx, reward_mean, reward_max, reward_std, speed)
+        )
 
         elite = population[0]
         for worker_queue in input_queues:

@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-import os
-import ptan
-import time
 import argparse
-from tensorboardX import SummaryWriter
+import os
+import time
 
+import ptan
 import torch
 import torch.optim as optim
-
 from lib import common
-
+from tensorboardX import SummaryWriter
 
 LEARNING_RATE = 1e-4
 TEST_EVERY_BATCH = 1000
@@ -19,7 +17,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda")
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
-    parser.add_argument("--seed", type=int, default=common.DEFAULT_SEED, help="Random seed to use, default=%d" % common.DEFAULT_SEED)
+    parser.add_argument(
+        "--seed", type=int, default=common.DEFAULT_SEED, help="Random seed to use, default=%d" % common.DEFAULT_SEED
+    )
     parser.add_argument("--steps", type=int, default=None, help="Limit of training steps, default=disabled")
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
@@ -47,8 +47,9 @@ if __name__ == "__main__":
     ts_start = time.time()
     best_test_reward = None
     with ptan.common.utils.TBMeanTracker(writer, batch_size=100) as tb_tracker:
-        for mb_obs, mb_rewards, mb_actions, mb_values, _, done_rewards, done_steps in \
-                common.iterate_batches(envs, net, device=device):
+        for mb_obs, mb_rewards, mb_actions, mb_values, _, done_rewards, done_steps in common.iterate_batches(
+            envs, net, device=device
+        ):
             if len(done_rewards) > 0:
                 total_steps += sum(done_steps)
                 speed = total_steps / (time.time() - ts_start)
@@ -59,11 +60,14 @@ if __name__ == "__main__":
                 tb_tracker.track("total_reward_max", best_reward, step_idx)
                 tb_tracker.track("total_reward", done_rewards, step_idx)
                 tb_tracker.track("total_steps", done_steps, step_idx)
-                print("%d: done %d episodes, mean_reward=%.2f, best_reward=%.2f, speed=%.2f" % (
-                    step_idx, len(done_rewards), done_rewards.mean(), best_reward, speed))
+                print(
+                    "%d: done %d episodes, mean_reward=%.2f, best_reward=%.2f, speed=%.2f"
+                    % (step_idx, len(done_rewards), done_rewards.mean(), best_reward, speed)
+                )
 
-            common.train_a2c(net, mb_obs, mb_rewards, mb_actions, mb_values,
-                             optimizer, tb_tracker, step_idx, device=device)
+            common.train_a2c(
+                net, mb_obs, mb_rewards, mb_actions, mb_values, optimizer, tb_tracker, step_idx, device=device
+            )
             step_idx += 1
             if args.steps is not None and args.steps < step_idx:
                 break
@@ -77,5 +81,7 @@ if __name__ == "__main__":
                         fname = os.path.join(saves_path, "best_%08.3f_%d.dat" % (test_reward, step_idx))
                         torch.save(net.state_dict(), fname)
                     best_test_reward = test_reward
-                print("%d: test reward=%.2f, steps=%.2f, best_reward=%.2f" % (
-                    step_idx, test_reward, test_steps, best_test_reward))
+                print(
+                    "%d: test reward=%.2f, steps=%.2f, best_reward=%.2f"
+                    % (step_idx, test_reward, test_steps, best_test_reward)
+                )

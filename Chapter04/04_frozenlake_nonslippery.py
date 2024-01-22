@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 import random
+from collections import namedtuple
+
 import gym
+import gym.envs.toy_text.frozen_lake
 import gym.spaces
 import gym.wrappers
-import gym.envs.toy_text.frozen_lake
-from collections import namedtuple
 import numpy as np
-from tensorboardX import SummaryWriter
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
+from tensorboardX import SummaryWriter
 
 HIDDEN_SIZE = 128
 BATCH_SIZE = 100
@@ -23,7 +22,7 @@ class DiscreteOneHotWrapper(gym.ObservationWrapper):
     def __init__(self, env):
         super(DiscreteOneHotWrapper, self).__init__(env)
         assert isinstance(env.observation_space, gym.spaces.Discrete)
-        self.observation_space = gym.spaces.Box(0.0, 1.0, (env.observation_space.n, ), dtype=np.float32)
+        self.observation_space = gym.spaces.Box(0.0, 1.0, (env.observation_space.n,), dtype=np.float32)
 
     def observation(self, observation):
         res = np.copy(self.observation_space.low)
@@ -34,18 +33,14 @@ class DiscreteOneHotWrapper(gym.ObservationWrapper):
 class Net(nn.Module):
     def __init__(self, obs_size, hidden_size, n_actions):
         super(Net, self).__init__()
-        self.net = nn.Sequential(
-            nn.Linear(obs_size, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, n_actions)
-        )
+        self.net = nn.Sequential(nn.Linear(obs_size, hidden_size), nn.ReLU(), nn.Linear(hidden_size, n_actions))
 
     def forward(self, x):
         return self.net(x)
 
 
-Episode = namedtuple('Episode', field_names=['reward', 'steps'])
-EpisodeStep = namedtuple('EpisodeStep', field_names=['observation', 'action'])
+Episode = namedtuple("Episode", field_names=["reward", "steps"])
+EpisodeStep = namedtuple("EpisodeStep", field_names=["observation", "action"])
 
 
 def iterate_batches(env, net, batch_size):
@@ -91,8 +86,7 @@ def filter_batch(batch, percentile):
 
 if __name__ == "__main__":
     random.seed(12345)
-    env = gym.envs.toy_text.frozen_lake.FrozenLakeEnv(
-        is_slippery=False)
+    env = gym.envs.toy_text.frozen_lake.FrozenLakeEnv(is_slippery=False)
     env.spec = gym.spec("FrozenLake-v0")
     env = gym.wrappers.TimeLimit(env, max_episode_steps=100)
     env = DiscreteOneHotWrapper(env)
@@ -120,8 +114,10 @@ if __name__ == "__main__":
         loss_v = objective(action_scores_v, acts_v)
         loss_v.backward()
         optimizer.step()
-        print("%d: loss=%.3f, reward_mean=%.3f, reward_bound=%.3f, batch=%d" % (
-            iter_no, loss_v.item(), reward_mean, reward_bound, len(full_batch)))
+        print(
+            "%d: loss=%.3f, reward_mean=%.3f, reward_bound=%.3f, batch=%d"
+            % (iter_no, loss_v.item(), reward_mean, reward_bound, len(full_batch))
+        )
         writer.add_scalar("loss", loss_v.item(), iter_no)
         writer.add_scalar("reward_mean", reward_mean, iter_no)
         writer.add_scalar("reward_bound", reward_bound, iter_no)

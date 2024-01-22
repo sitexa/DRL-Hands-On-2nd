@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import sys
+
 sys.path.append("..")
 
-import struct
 import argparse
-from universe.vncdriver.fbs_reader import FBSReader
+import struct
 
+from universe.vncdriver.fbs_reader import FBSReader
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

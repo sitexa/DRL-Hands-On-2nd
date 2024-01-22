@@ -22,7 +22,7 @@ Larger C makes tree taller by exploring less options around, but delving deeper 
 This leads to longer search paths which take more and more time to back up.
 It is likely that my C value is too large and I just need to speed up MCTS.
 
-TODO: 
+TODO:
 * measure depths of resulting tree
 * analyze the length of solution (both naive and BFS)
 * check effect of C on those parameters
@@ -58,7 +58,7 @@ Looks like virtual loss needs tuning as well
 # 2018-11-16
 ## Experiment with lower c, but more steps
 
-With decrease of C, solve ratio drops (with fixed amount of steps). But lower C is generally faster. 
+With decrease of C, solve ratio drops (with fixed amount of steps). But lower C is generally faster.
 Maybe more steps will increase the solve ratio and will fit the same time frame?
 
 Experiments:
@@ -86,7 +86,7 @@ Experiments:
 
 Charts are in 05_batch_search.ipynb
 
-With larger batch, solve ration drops. Speed increases, but not proportionally - b=100 has speed increase 2-3 times in 
+With larger batch, solve ration drops. Speed increases, but not proportionally - b=100 has speed increase 2-3 times in
 terms of raw steps.
 
 Maybe, we need to tune virtual loss as well. Do an experiment on it.

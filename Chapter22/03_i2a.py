@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
-import os
-import ptan
-import time
-import gym
 import argparse
+import os
+import time
 
-from lib import common, i2a
-
-import torch.optim as optim
+import gym
+import ptan
 import torch
 import torch.nn.functional as F
-
+import torch.optim as optim
+from lib import common, i2a
 from tensorboardX import SummaryWriter
-
 
 ROLLOUTS_STEPS = 3
 LEARNING_RATE = 1e-4
@@ -25,7 +22,9 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
     parser.add_argument("--cuda", default=False, action="store_true", help="Enable CUDA")
     parser.add_argument("--em", required=True, help="Environment model file name")
-    parser.add_argument("--seed", type=int, default=common.DEFAULT_SEED, help="Random seed to use, default=%d" % common.DEFAULT_SEED)
+    parser.add_argument(
+        "--seed", type=int, default=common.DEFAULT_SEED, help="Random seed to use, default=%d" % common.DEFAULT_SEED
+    )
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
 
@@ -67,8 +66,9 @@ if __name__ == "__main__":
     best_reward = None
     best_test_reward = None
     with ptan.common.utils.TBMeanTracker(writer, batch_size=10) as tb_tracker:
-        for mb_obs, mb_rewards, mb_actions, mb_values, mb_probs, done_rewards, done_steps in \
-                common.iterate_batches(envs, net_i2a, device):
+        for mb_obs, mb_rewards, mb_actions, mb_values, mb_probs, done_rewards, done_steps in common.iterate_batches(
+            envs, net_i2a, device
+        ):
             if len(done_rewards) > 0:
                 total_steps += sum(done_steps)
                 speed = total_steps / (time.time() - ts_start)
@@ -79,22 +79,23 @@ if __name__ == "__main__":
                 tb_tracker.track("total_reward_max", best_reward, step_idx)
                 tb_tracker.track("total_reward", done_rewards, step_idx)
                 tb_tracker.track("total_steps", done_steps, step_idx)
-                print("%d: done %d episodes, mean_reward=%.2f, best_reward=%.2f, speed=%.2f f/s" % (
-                    step_idx, len(done_rewards), done_rewards.mean(), best_reward, speed))
+                print(
+                    "%d: done %d episodes, mean_reward=%.2f, best_reward=%.2f, speed=%.2f f/s"
+                    % (step_idx, len(done_rewards), done_rewards.mean(), best_reward, speed)
+                )
 
-            obs_v = common.train_a2c(net_i2a, mb_obs, mb_rewards, mb_actions, mb_values,
-                                     optimizer, tb_tracker, step_idx, device=device)
+            obs_v = common.train_a2c(
+                net_i2a, mb_obs, mb_rewards, mb_actions, mb_values, optimizer, tb_tracker, step_idx, device=device
+            )
             # policy distillation
             probs_v = torch.FloatTensor(mb_probs).to(device)
             policy_opt.zero_grad()
             logits_v, _ = net_policy(obs_v)
-            policy_loss_v = -F.log_softmax(logits_v, dim=1) * \
-                            probs_v.view_as(logits_v)
+            policy_loss_v = -F.log_softmax(logits_v, dim=1) * probs_v.view_as(logits_v)
             policy_loss_v = policy_loss_v.sum(dim=1).mean()
             policy_loss_v.backward()
             policy_opt.step()
-            tb_tracker.track("loss_distill", policy_loss_v,
-                             step_idx)
+            tb_tracker.track("loss_distill", policy_loss_v, step_idx)
 
             step_idx += 1
 
@@ -111,5 +112,7 @@ if __name__ == "__main__":
                         fname = os.path.join(saves_path, "em.dat")
                         torch.save(net_em.state_dict(), fname)
                     best_test_reward = test_reward
-                print("%d: test reward=%.2f, steps=%.2f, best_reward=%.2f" % (
-                    step_idx, test_reward, test_steps, best_test_reward))
+                print(
+                    "%d: test reward=%.2f, steps=%.2f, best_reward=%.2f"
+                    % (step_idx, test_reward, test_steps, best_test_reward)
+                )

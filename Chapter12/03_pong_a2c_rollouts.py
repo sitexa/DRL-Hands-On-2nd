@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-import gym
-import ptan
-import numpy as np
 import argparse
-from tensorboardX import SummaryWriter
 
+import gym
+import numpy as np
+import ptan
 import torch
 import torch.nn as nn
-import torch.nn.utils as nn_utils
 import torch.nn.functional as F
+import torch.nn.utils as nn_utils
 import torch.optim as optim
-
 from lib import common
+from tensorboardX import SummaryWriter
 
 GAMMA = 0.99
 LEARNING_RATE = 1e-4
@@ -32,21 +31,13 @@ class AtariA2C(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = self._get_conv_out(input_shape)
-        self.policy = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, n_actions)
-        )
+        self.policy = nn.Sequential(nn.Linear(conv_out_size, 512), nn.ReLU(), nn.Linear(512, n_actions))
 
-        self.value = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1)
-        )
+        self.value = nn.Sequential(nn.Linear(conv_out_size, 512), nn.ReLU(), nn.Linear(512, 1))
 
     def _get_conv_out(self, shape):
         o = self.conv(torch.zeros(1, *shape))
@@ -86,7 +77,7 @@ def unpack_batch(batch, net, device="cpu"):
         last_states_v = torch.stack(last_states).to(device)
         last_vals_v = net(last_states_v)[1]
         last_vals_np = last_vals_v.data.cpu().numpy()[:, 0]
-        rewards_np[not_done_idx] += GAMMA ** REWARD_STEPS * last_vals_np
+        rewards_np[not_done_idx] += GAMMA**REWARD_STEPS * last_vals_np
 
     ref_vals_v = torch.FloatTensor(rewards_np).to(device)
     return states_v, actions_t, ref_vals_v
@@ -157,11 +148,11 @@ if __name__ == "__main__":
                 nn_utils.clip_grad_norm_(net.parameters(), CLIP_GRAD)
                 optimizer.step()
 
-                tb_tracker.track("advantage",       adv_v, step_idx)
-                tb_tracker.track("values",          value_v, step_idx)
-                tb_tracker.track("batch_rewards",   vals_ref_v, step_idx)
-                tb_tracker.track("loss_entropy",    entropy_loss_v, step_idx)
-                tb_tracker.track("loss_policy",     loss_policy_v, step_idx)
-                tb_tracker.track("loss_value",      loss_value_v, step_idx)
-                tb_tracker.track("loss_total",      loss_v, step_idx)
+                tb_tracker.track("advantage", adv_v, step_idx)
+                tb_tracker.track("values", value_v, step_idx)
+                tb_tracker.track("batch_rewards", vals_ref_v, step_idx)
+                tb_tracker.track("loss_entropy", entropy_loss_v, step_idx)
+                tb_tracker.track("loss_policy", loss_policy_v, step_idx)
+                tb_tracker.track("loss_value", loss_value_v, step_idx)
+                tb_tracker.track("loss_total", loss_v, step_idx)
                 step_idx += NUM_ENVS * REWARD_STEPS

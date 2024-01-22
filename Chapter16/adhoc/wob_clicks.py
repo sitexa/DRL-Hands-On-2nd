@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 import sys
+
 sys.path.append("..")
 import time
+
 import gym
 import universe
-
-from PIL import Image
-
 from lib import wob_vnc
-
+from PIL import Image
 
 if __name__ == "__main__":
     env = gym.make("wob.mini.BisectAngle-v0")
     env = universe.wrappers.experimental.SoftmaxClickMouse(env)
     env = wob_vnc.MiniWoBCropper(env)
 
-    env.configure(remotes='vnc://gpu:5900+15900')
+    env.configure(remotes="vnc://gpu:5900+15900")
     obs = env.reset()
 
     while True:

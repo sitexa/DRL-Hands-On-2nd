@@ -1,98 +1,106 @@
 #!/usr/bin/env python3
-import ptan
-import ptan.ignite as ptan_ignite
-import gym
 import argparse
 import random
-import torch
-import torch.optim as optim
-import torch.nn.functional as F
-
-from ignite.engine import Engine
 from types import SimpleNamespace
+
+import gym
+import ptan
+import ptan.ignite as ptan_ignite
+import torch
+import torch.nn.functional as F
+import torch.optim as optim
+from ignite.engine import Engine
 from lib import common, ppo
 
-
 HYPERPARAMS = {
-    'debug': SimpleNamespace(**{
-        'env_name':         "CartPole-v0",
-        'stop_reward':      None,
-        'stop_test_reward': 190.0,
-        'run_name':         'debug',
-        'actor_lr':         1e-4,
-        'critic_lr':        1e-4,
-        'gamma':            0.9,
-        'ppo_trajectory':   2049,
-        'ppo_epoches':      10,
-        'ppo_eps':          0.2,
-        'batch_size':       32,
-        'gae_lambda':       0.95,
-        'entropy_beta':     0.1,
-    }),
-    'ppo': SimpleNamespace(**{
-        'env_name':         "MountainCar-v0",
-        'stop_reward':      None,
-        'stop_test_reward': -130.0,
-        'run_name':         'ppo',
-        'actor_lr':         1e-4,
-        'critic_lr':        1e-4,
-        'gamma':            0.99,
-        'ppo_trajectory':   2049,
-        'ppo_epoches':      10,
-        'ppo_eps':          0.2,
-        'batch_size':       32,
-        'gae_lambda':       0.95,
-        'entropy_beta':     0.1,
-    }),
-    'noisynet': SimpleNamespace(**{
-        'env_name':         "MountainCar-v0",
-        'stop_reward':      None,
-        'stop_test_reward': -130.0,
-        'run_name':         'noisynet',
-        'actor_lr':         1e-4,
-        'critic_lr':        1e-4,
-        'gamma':            0.99,
-        'ppo_trajectory':   2049,
-        'ppo_epoches':      10,
-        'ppo_eps':          0.2,
-        'batch_size':       32,
-        'gae_lambda':       0.95,
-        'entropy_beta':     0.1,
-    }),
-    'counts': SimpleNamespace(**{
-        'env_name':         "MountainCar-v0",
-        'stop_reward':      None,
-        'stop_test_reward': -130.0,
-        'run_name':         'counts',
-        'actor_lr':         1e-4,
-        'critic_lr':        1e-4,
-        'gamma':            0.99,
-        'ppo_trajectory':   2049,
-        'ppo_epoches':      10,
-        'ppo_eps':          0.2,
-        'batch_size':       32,
-        'gae_lambda':       0.95,
-        'entropy_beta':     0.1,
-        'counts_reward_scale': 0.5,
-    }),
-
-    'distill': SimpleNamespace(**{
-        'env_name': "MountainCar-v0",
-        'stop_reward': None,
-        'stop_test_reward': -130.0,
-        'run_name': 'distill',
-        'actor_lr': 1e-4,
-        'critic_lr': 1e-4,
-        'gamma': 0.99,
-        'ppo_trajectory': 2049,
-        'ppo_epoches': 10,
-        'ppo_eps': 0.2,
-        'batch_size': 32,
-        'gae_lambda': 0.95,
-        'entropy_beta': 0.1,
-        'reward_scale': 100.0,
-        'distill_lr': 1e-5,
-    }),
+    "debug": SimpleNamespace(
+        **{
+            "env_name": "CartPole-v0",
+            "stop_reward": None,
+            "stop_test_reward": 190.0,
+            "run_name": "debug",
+            "actor_lr": 1e-4,
+            "critic_lr": 1e-4,
+            "gamma": 0.9,
+            "ppo_trajectory": 2049,
+            "ppo_epoches": 10,
+            "ppo_eps": 0.2,
+            "batch_size": 32,
+            "gae_lambda": 0.95,
+            "entropy_beta": 0.1,
+        }
+    ),
+    "ppo": SimpleNamespace(
+        **{
+            "env_name": "MountainCar-v0",
+            "stop_reward": None,
+            "stop_test_reward": -130.0,
+            "run_name": "ppo",
+            "actor_lr": 1e-4,
+            "critic_lr": 1e-4,
+            "gamma": 0.99,
+            "ppo_trajectory": 2049,
+            "ppo_epoches": 10,
+            "ppo_eps": 0.2,
+            "batch_size": 32,
+            "gae_lambda": 0.95,
+            "entropy_beta": 0.1,
+        }
+    ),
+    "noisynet": SimpleNamespace(
+        **{
+            "env_name": "MountainCar-v0",
+            "stop_reward": None,
+            "stop_test_reward": -130.0,
+            "run_name": "noisynet",
+            "actor_lr": 1e-4,
+            "critic_lr": 1e-4,
+            "gamma": 0.99,
+            "ppo_trajectory": 2049,
+            "ppo_epoches": 10,
+            "ppo_eps": 0.2,
+            "batch_size": 32,
+            "gae_lambda": 0.95,
+            "entropy_beta": 0.1,
+        }
+    ),
+    "counts": SimpleNamespace(
+        **{
+            "env_name": "MountainCar-v0",
+            "stop_reward": None,
+            "stop_test_reward": -130.0,
+            "run_name": "counts",
+            "actor_lr": 1e-4,
+            "critic_lr": 1e-4,
+            "gamma": 0.99,
+            "ppo_trajectory": 2049,
+            "ppo_epoches": 10,
+            "ppo_eps": 0.2,
+            "batch_size": 32,
+            "gae_lambda": 0.95,
+            "entropy_beta": 0.1,
+            "counts_reward_scale": 0.5,
+        }
+    ),
+    "distill": SimpleNamespace(
+        **{
+            "env_name": "MountainCar-v0",
+            "stop_reward": None,
+            "stop_test_reward": -130.0,
+            "run_name": "distill",
+            "actor_lr": 1e-4,
+            "critic_lr": 1e-4,
+            "gamma": 0.99,
+            "ppo_trajectory": 2049,
+            "ppo_epoches": 10,
+            "ppo_eps": 0.2,
+            "batch_size": 32,
+            "gae_lambda": 0.95,
+            "entropy_beta": 0.1,
+            "reward_scale": 100.0,
+            "distill_lr": 1e-5,
+        }
+    ),
 }
 
 
@@ -106,24 +114,24 @@ if __name__ == "__main__":
     torch.manual_seed(common.SEED)
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", required=True, help="Run name")
-    parser.add_argument("-p", "--params", default='ppo', choices=list(HYPERPARAMS.keys()),
-                        help="Parameters, default=ppo")
+    parser.add_argument(
+        "-p", "--params", default="ppo", choices=list(HYPERPARAMS.keys()), help="Parameters, default=ppo"
+    )
     args = parser.parse_args()
     params = HYPERPARAMS[args.params]
 
     env = gym.make(params.env_name)
     test_env = gym.make(params.env_name)
-    if args.params == 'counts':
-        env = common.PseudoCountRewardWrapper(env, reward_scale=params.counts_reward_scale,
-                                              hash_function=counts_hash)
+    if args.params == "counts":
+        env = common.PseudoCountRewardWrapper(env, reward_scale=params.counts_reward_scale, hash_function=counts_hash)
     net_distill = None
-    if args.params == 'distill':
+    if args.params == "distill":
         net_distill = ppo.MountainCarNetDistillery(env.observation_space.shape[0])
         env = common.NetworkDistillationRewardWrapper(env, net_distill.extra_reward, reward_scale=params.reward_scale)
 
     env.seed(common.SEED)
 
-    if args.params == 'noisynet':
+    if args.params == "noisynet":
         net = ppo.MountainCarNoisyNetsPPO(env.observation_space.shape[0], env.action_space.n)
     else:
         net = ppo.MountainCarBasePPO(env.observation_space.shape[0], env.action_space.n)
@@ -175,14 +183,14 @@ if __name__ == "__main__":
             loss_distill_t = net_distill.loss(states_t)
             loss_distill_t.backward()
             opt_distill.step()
-            res['loss_distill'] = loss_distill_t.item()
+            res["loss_distill"] = loss_distill_t.item()
 
         return res
 
-
     engine = Engine(process_batch)
-    common.setup_ignite(engine, params, exp_source, args.name, extra_metrics=(
-        'test_reward', 'avg_test_reward', 'test_steps'))
+    common.setup_ignite(
+        engine, params, exp_source, args.name, extra_metrics=("test_reward", "avg_test_reward", "test_steps")
+    )
 
     @engine.on(ptan_ignite.PeriodEvents.ITERS_1000_COMPLETED)
     def test_network(engine):
@@ -204,12 +212,10 @@ if __name__ == "__main__":
         else:
             test_reward_avg = test_reward_avg * 0.95 + 0.05 * reward
         engine.state.test_reward_avg = test_reward_avg
-        print("Test done: got %.3f reward after %d steps, avg reward %.3f" % (
-            reward, steps, test_reward_avg
-        ))
-        engine.state.metrics['test_reward'] = reward
-        engine.state.metrics['avg_test_reward'] = test_reward_avg
-        engine.state.metrics['test_steps'] = steps
+        print("Test done: got %.3f reward after %d steps, avg reward %.3f" % (reward, steps, test_reward_avg))
+        engine.state.metrics["test_reward"] = reward
+        engine.state.metrics["avg_test_reward"] = test_reward_avg
+        engine.state.metrics["test_steps"] = steps
 
         if test_reward_avg > params.stop_test_reward:
             print("Reward boundary has crossed, stopping training. Contgrats!")
@@ -218,9 +224,18 @@ if __name__ == "__main__":
 
     def new_ppo_batch():
         # In noisy networks we need to reset the noise
-        if args.params == 'noisynet':
+        if args.params == "noisynet":
             net.sample_noise()
 
-    engine.run(ppo.batch_generator(exp_source, net, params.ppo_trajectory,
-                                   params.ppo_epoches, params.batch_size,
-                                   params.gamma, params.gae_lambda, new_batch_callable=new_ppo_batch))
+    engine.run(
+        ppo.batch_generator(
+            exp_source,
+            net,
+            params.ppo_trajectory,
+            params.ppo_epoches,
+            params.batch_size,
+            params.gamma,
+            params.gae_lambda,
+            new_batch_callable=new_ppo_batch,
+        )
+    )
