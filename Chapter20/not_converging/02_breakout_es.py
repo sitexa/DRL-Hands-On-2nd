@@ -8,10 +8,10 @@ import numpy as np
 import ptan
 import torch
 import torch.nn as nn
-from torch.utils.tensorboard import SummaryWriter
 from torch import multiprocessing as mp
 from torch import optim
 from torch.autograd import Variable
+from torch.utils.tensorboard import SummaryWriter
 
 NOISE_STD = 0.05
 LEARNING_RATE = 0.001

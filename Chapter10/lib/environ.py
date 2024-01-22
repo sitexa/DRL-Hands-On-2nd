@@ -1,6 +1,5 @@
 import enum
 
-import gym.spaces
 import gymnasium as gym
 import numpy as np
 from gym.envs.registration import EnvSpec

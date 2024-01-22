@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from collections import namedtuple
 
-import gym.spaces
 import gymnasium as gym
 import numpy as np
 import torch

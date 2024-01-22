@@ -1,7 +1,6 @@
 import collections
 
 import cv2
-import gym.spaces
 import gymnasium as gym
 import numpy as np
 
