@@ -23,7 +23,7 @@ EPS_STEPS = 1000
 
 TAU = 0.005
 
-device = torch.device("mps")
+device = torch.device("cuda")
 
 Transition = namedtuple(typename="Transition", field_names=("state", "action", "reward", "next_state", "terminated"))
 
@@ -134,7 +134,7 @@ class DQN:
 
 
 if __name__ == "__main__":
-    num_episodes = 600
+    num_episodes = 500
     env = gym.make(DEFAULT_ENV_NAME)
 
     buffer = ReplayBuffer()
@@ -144,3 +144,4 @@ if __name__ == "__main__":
         reward = dqn.train_episode()
         writer.add_scalar("reward", reward, i)
     writer.close()
+    torch.save(dqn.q_net.state_dict(), "dqn.pt")
