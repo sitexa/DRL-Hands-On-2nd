@@ -1,5 +1,6 @@
-import ptan
 import torch.nn as nn
+
+import ptan
 
 
 class DQNNet(nn.Module):

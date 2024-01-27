@@ -1,9 +1,10 @@
 import gymnasium as gym
-import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+
+import ptan
 
 HIDDEN_SIZE = 128
 BATCH_SIZE = 16
@@ -51,7 +52,7 @@ def unpack_batch(batch, net, gamma):
 
 
 if __name__ == "__main__":
-    env = gym.make("CartPole-v0")
+    env = gym.make("CartPole-v1")
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -75,7 +76,8 @@ if __name__ == "__main__":
         for reward, steps in exp_source.pop_rewards_steps():
             episode += 1
             print("%d: episode %d done, reward=%.3f, epsilon=%.2f" % (step, episode, reward, selector.epsilon))
-            solved = reward > 150
+            solved = reward > 500
+            # there may be some bugs
         if solved:
             print("Congrats!")
             break

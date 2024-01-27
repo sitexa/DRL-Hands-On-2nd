@@ -1,6 +1,7 @@
 from typing import Any, List, Optional, Tuple
 
 import gymnasium as gym
+
 import ptan
 
 
@@ -19,14 +20,14 @@ class ToyEnv(gym.Env):
 
     def reset(self):
         self.step_index = 0
-        return self.step_index
+        return self.step_index, {}
 
     def step(self, action):
         is_done = self.step_index == 10
         if is_done:
-            return self.step_index % self.observation_space.n, 0.0, is_done, {}
+            return self.step_index % self.observation_space.n, 0.0, is_done, False, {}
         self.step_index += 1
-        return self.step_index % self.observation_space.n, float(action), self.step_index == 10, {}
+        return self.step_index % self.observation_space.n, float(action), self.step_index == 10, False, {}
 
 
 class DullAgent(ptan.agent.BaseAgent):
