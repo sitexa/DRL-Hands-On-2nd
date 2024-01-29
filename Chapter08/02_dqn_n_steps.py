@@ -3,11 +3,13 @@ import argparse
 import random
 
 import gymnasium as gym
-import ptan
 import torch
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import common, dqn_model
+
+import ptan
+import ptan.common
 
 NAME = "02_n_steps"
 DEFAULT_N_STEPS = 4

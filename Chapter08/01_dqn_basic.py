@@ -3,11 +3,13 @@ import argparse
 import random
 
 import gymnasium as gym
-import ptan
 import torch
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import common, dqn_model
+
+import ptan
+import ptan.common
 
 NAME = "01_baseline"
 
@@ -23,7 +25,7 @@ if __name__ == "__main__":
 
     env = gym.make(params.env_name)
     env = ptan.common.wrappers.wrap_dqn(env)
-    env.seed(common.SEED)
+    env.unwrapped.seed(common.SEED)
 
     net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
 

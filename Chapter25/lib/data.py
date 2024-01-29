@@ -3,8 +3,8 @@ from typing import Any, Callable, List, Optional, Tuple
 import gymnasium as gym
 import magent
 import numpy as np
-from gym import spaces
 from gym.vector.vector_env import VectorEnv
+from gymnasium import spaces
 
 
 class MAgentEnv(VectorEnv):

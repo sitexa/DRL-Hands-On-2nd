@@ -6,7 +6,7 @@ os.environ.setdefault("PATH", "")
 from collections import deque
 
 import gymnasium as gym
-from gym import spaces
+from gymnasium import spaces
 
 USE_PIL = True
 if USE_PIL:
