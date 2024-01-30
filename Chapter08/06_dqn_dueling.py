@@ -4,11 +4,12 @@ import random
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import common, dqn_extra
+
+import ptan
 
 NAME = "06_dueling"
 STATES_TO_EVALUATE = 1000

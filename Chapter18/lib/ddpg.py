@@ -1,9 +1,10 @@
 from typing import Iterable, Optional
 
 import numpy as np
-import ptan
 import torch
 import torch.nn as nn
+
+import ptan
 
 
 def fc_from_hidden_sizes(

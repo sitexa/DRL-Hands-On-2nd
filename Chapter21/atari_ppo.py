@@ -5,13 +5,14 @@ import time
 from types import SimpleNamespace
 
 import gymnasium as gym
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import atari_wrappers, common, ppo
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 N_ENVS = 8
 NAME = "atari"

@@ -5,12 +5,13 @@ import os
 import random
 
 import numpy as np
-import ptan
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from libbots import data, model, utils
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 SAVES_DIR = "saves"
 

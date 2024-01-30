@@ -3,11 +3,12 @@ from typing import List
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.distributions as t_distr
 import torch.nn as nn
 import torch.nn.functional as F
+
+import ptan
 
 from . import preproc
 

@@ -6,13 +6,14 @@ from typing import List
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import common, model, preproc
 from textworld import EnvInfos
 from textworld.gym import register_games
+
+import ptan
 
 GAMMA = 0.9
 BATCH_SIZE = 16

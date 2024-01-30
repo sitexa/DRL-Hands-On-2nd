@@ -4,12 +4,13 @@ import pathlib
 
 import gym.wrappers
 import numpy as np
-import ptan
 import torch
 import torch.optim as optim
 from ignite.contrib.handlers import tensorboard_logger as tb_logger
 from ignite.engine import Engine
 from lib import common, data, environ, models, validation
+
+import ptan
 
 SAVES_DIR = pathlib.Path("saves")
 STOCKS = "data/YNDX_160101_161231.csv"

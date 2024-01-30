@@ -1,7 +1,8 @@
 import numpy as np
-import ptan
 import torch
 import torch.distributions as distr
+
+import ptan
 
 
 def unpack_batch_a2c(batch, net, last_val_gamma, device="cpu"):

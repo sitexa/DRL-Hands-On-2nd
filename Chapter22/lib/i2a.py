@@ -1,8 +1,9 @@
 import numpy as np
-import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+import ptan
 
 from . import common
 

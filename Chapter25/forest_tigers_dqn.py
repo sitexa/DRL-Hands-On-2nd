@@ -9,12 +9,13 @@ from types import SimpleNamespace
 from typing import Tuple
 
 import magent
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 from ignite.engine import Engine
 from lib import common, data, model
 from torch import optim
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 MAP_SIZE = 64
 COUNT_TIGERS = 10

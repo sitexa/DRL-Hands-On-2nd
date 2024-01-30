@@ -2,8 +2,9 @@ import sys
 import time
 
 import numpy as np
-import ptan
 import torch
+
+import ptan
 
 
 class RewardTracker:

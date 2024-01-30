@@ -4,11 +4,12 @@ import random
 from types import SimpleNamespace
 
 import numpy as np
-import ptan
 import torch
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import atari_wrappers, common, dqn_extra
+
+import ptan
 
 STATES_TO_EVALUATE = 1000
 EVAL_EVERY_FRAME = 10000

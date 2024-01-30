@@ -4,12 +4,13 @@ import os
 import time
 
 import gymnasium as gym
-import ptan
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import common, i2a
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 ROLLOUTS_STEPS = 3
 LEARNING_RATE = 1e-4

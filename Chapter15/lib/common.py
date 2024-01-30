@@ -4,14 +4,15 @@ from datetime import datetime, timedelta
 from types import SimpleNamespace
 from typing import Iterable, List, Tuple
 
-import ptan
-import ptan.ignite as ptan_ignite
 import textworld
 import textworld.text_utils
 from ignite.contrib.handlers import tensorboard_logger as tb_logger
 from ignite.engine import Engine
 from ignite.metrics import RunningAverage
 from textworld.gym.spaces import text_spaces
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 PARAMS = {
     "small": SimpleNamespace(

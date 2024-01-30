@@ -3,9 +3,10 @@ import argparse
 import time
 
 import gymnasium as gym
-import ptan
 import torch
 from lib import ddpg, microtaur
+
+import ptan
 
 OBS_HISTORY_STEPS = 4
 

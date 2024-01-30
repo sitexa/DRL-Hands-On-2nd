@@ -6,12 +6,13 @@ import time
 import gym.wrappers
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import ddpg, microtaur
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 TIME_LIMIT = 1000
 REPLAY_SIZE = 100000

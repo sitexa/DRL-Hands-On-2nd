@@ -10,13 +10,14 @@ from typing import List, Tuple
 
 import gymnasium as gym
 import magent
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 from gym.wrappers.time_limit import TimeLimit
 from ignite.engine import Engine
 from lib import common, data, model
 from torch import optim
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 MAP_SIZE = 16
 COUNT_AGENTS_1 = 20

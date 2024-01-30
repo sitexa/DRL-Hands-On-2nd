@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 GAMMA = 0.99
 LEARNING_RATE = 0.01

@@ -1,10 +1,11 @@
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils as nn_utils
+
+import ptan
 
 DEFAULT_SEED = 20
 

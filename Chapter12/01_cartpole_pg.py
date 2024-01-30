@@ -3,12 +3,13 @@ import argparse
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 GAMMA = 0.99
 LEARNING_RATE = 0.001

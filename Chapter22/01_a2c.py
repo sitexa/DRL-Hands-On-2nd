@@ -3,11 +3,12 @@ import argparse
 import os
 import time
 
-import ptan
 import torch
 import torch.optim as optim
 from lib import common
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 LEARNING_RATE = 1e-4
 TEST_EVERY_BATCH = 1000

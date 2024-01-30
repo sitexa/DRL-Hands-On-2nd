@@ -5,12 +5,13 @@ import os
 import random
 import time
 
-import ptan
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import game, mcts, model
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 PLAY_EPISODES = 1  # 25
 MCTS_SEARCHES = 10

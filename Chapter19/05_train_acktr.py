@@ -6,13 +6,14 @@ import time
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import pybullet_envs
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import calc_logprob, common, kfac, model, test_net
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 ENV_ID = "HalfCheetahBulletEnv-v0"
 GAMMA = 0.99

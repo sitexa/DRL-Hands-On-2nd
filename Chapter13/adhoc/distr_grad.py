@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import numpy as np
-import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
+
+import ptan
 
 TRAIN_DATA = [1, 2, 3, 4, 5, 6]
 

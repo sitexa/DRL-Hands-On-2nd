@@ -4,12 +4,13 @@ import os
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from lib import common, i2a
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 LEARNING_RATE = 5e-4
 NUM_ENVS = 16

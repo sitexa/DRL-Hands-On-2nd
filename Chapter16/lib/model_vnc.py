@@ -2,12 +2,13 @@ import logging
 import pickle
 
 import numpy as np
-import ptan
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils.rnn as rnn_utils
 from nltk.tokenize import TweetTokenizer
+
+import ptan
 
 MM_EMBEDDINGS_DIM = 50
 MM_HIDDEN_SIZE = 128

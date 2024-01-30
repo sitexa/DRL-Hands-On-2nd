@@ -3,10 +3,11 @@ import argparse
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn.functional as F
 from lib import common
+
+import ptan
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

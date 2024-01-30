@@ -5,7 +5,6 @@ import random
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn.functional as F
 import torch.nn.utils as nn_utils
@@ -13,6 +12,8 @@ import torch.optim as optim
 import universe
 from lib import common, model_vnc, vnc_demo, wob_vnc
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 REMOTES_COUNT = 8
 ENV_NAME = "wob.mini.ClickTab-v0"

@@ -2,12 +2,13 @@
 import argparse
 
 import gymnasium as gym
-import ptan
 import torch
 import torch.multiprocessing as mp
 import torch.optim as optim
 from lib import common, dqn_model
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 PLAY_STEPS = 4
 

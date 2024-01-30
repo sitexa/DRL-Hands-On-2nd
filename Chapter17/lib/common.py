@@ -1,7 +1,8 @@
 import numpy as np
-import ptan
 import torch
 from torch.autograd import Variable
+
+import ptan
 
 
 def unpack_batch_a2c(batch, net, last_val_gamma, device="cpu"):

@@ -3,13 +3,14 @@ from datetime import datetime, timedelta
 from typing import Iterable
 
 import numpy as np
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 import torch.nn as nn
 from ignite.contrib.handlers import tensorboard_logger as tb_logger
 from ignite.engine import Engine
 from ignite.metrics import RunningAverage
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 
 @torch.no_grad()

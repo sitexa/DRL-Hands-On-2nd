@@ -1,8 +1,9 @@
 import math
 
 import numpy as np
-import ptan
 import torch
+
+import ptan
 
 
 def test_net(net, env, count=10, device="cpu"):
