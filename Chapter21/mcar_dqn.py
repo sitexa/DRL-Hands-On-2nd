@@ -4,12 +4,13 @@ import random
 from types import SimpleNamespace
 
 import gymnasium as gym
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import common, dqn_extra
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 HYPERPARAMS = {
     "egreedy": SimpleNamespace(
@@ -105,7 +106,7 @@ if __name__ == "__main__":
     test_env = gym.make(params.env_name)
     if args.params == "counts":
         env = common.PseudoCountRewardWrapper(env, reward_scale=params.counts_reward_scale, hash_function=counts_hash)
-    env.seed(common.SEED)
+    env.unwrapped.seed(common.SEED)
     if args.params.startswith("egreedy") or args.params == "counts":
         net = dqn_extra.MountainCarBaseDQN(env.observation_space.shape[0], env.action_space.n)
     elif args.params == "noisynet":

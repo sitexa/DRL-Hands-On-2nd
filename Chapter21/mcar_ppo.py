@@ -4,13 +4,14 @@ import random
 from types import SimpleNamespace
 
 import gymnasium as gym
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import common, ppo
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 HYPERPARAMS = {
     "debug": SimpleNamespace(
@@ -129,7 +130,7 @@ if __name__ == "__main__":
         net_distill = ppo.MountainCarNetDistillery(env.observation_space.shape[0])
         env = common.NetworkDistillationRewardWrapper(env, net_distill.extra_reward, reward_scale=params.reward_scale)
 
-    env.seed(common.SEED)
+    env.unwrapped.seed(common.SEED)
 
     if args.params == "noisynet":
         net = ppo.MountainCarNoisyNetsPPO(env.observation_space.shape[0], env.action_space.n)

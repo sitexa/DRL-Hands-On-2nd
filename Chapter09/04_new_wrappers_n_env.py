@@ -5,14 +5,15 @@ import warnings
 from datetime import datetime, timedelta
 
 import gymnasium as gym
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 import torch.optim as optim
 from ignite.contrib.handlers import tensorboard_logger as tb_logger
 from ignite.engine import Engine
 from ignite.metrics import RunningAverage
 from lib import atari_wrappers, common, dqn_model
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 NAME = "04_wrappers_n_env"
 
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     for _ in range(args.envs):
         env = atari_wrappers.make_atari(params.env_name, skip_noop=True, skip_maxskip=True)
         env = atari_wrappers.wrap_deepmind(env, pytorch_img=True, frame_stack=True, frame_stack_count=2)
-        env.seed(common.SEED)
+        env.unwrapped.seed(common.SEED)
         envs.append(env)
 
     params.batch_size *= args.envs

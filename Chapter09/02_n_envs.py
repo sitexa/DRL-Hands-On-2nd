@@ -5,14 +5,15 @@ import warnings
 from datetime import datetime, timedelta
 
 import gymnasium as gym
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 import torch.optim as optim
 from ignite.contrib.handlers import tensorboard_logger as tb_logger
 from ignite.engine import Engine
 from ignite.metrics import RunningAverage
 from lib import common, dqn_model
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 NAME = "02_n_envs"
 
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     for _ in range(args.envs):
         env = gym.make(params.env_name)
         env = ptan.common.wrappers.wrap_dqn(env)
-        env.seed(common.SEED)
+        env.unwrapped.seed(common.SEED)
         envs.append(env)
 
     params.batch_size *= args.envs

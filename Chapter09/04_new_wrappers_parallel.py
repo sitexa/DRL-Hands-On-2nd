@@ -6,8 +6,6 @@ from datetime import datetime, timedelta
 from typing import List, Tuple
 
 import gymnasium as gym
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 import torch.multiprocessing as mp
 import torch.optim as optim
@@ -15,6 +13,9 @@ from ignite.contrib.handlers import tensorboard_logger as tb_logger
 from ignite.engine import Engine
 from ignite.metrics import RunningAverage
 from lib import atari_wrappers, common, dqn_model
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 BATCH_MUL = 4
 NAME = "04_new_wrappers_parallel"
@@ -25,7 +26,7 @@ EpisodeEnded = collections.namedtuple("EpisodeEnded", field_names=("reward", "st
 def play_func(params, net, cuda, exp_queue):
     env = atari_wrappers.make_atari(params.env_name, skip_noop=True, skip_maxskip=True)
     env = atari_wrappers.wrap_deepmind(env, pytorch_img=True, frame_stack=True, frame_stack_count=2)
-    env.seed(common.SEED)
+    env.unwrapped.seed(common.SEED)
     device = torch.device("cuda" if cuda else "cpu")
 
     selector = ptan.actions.EpsilonGreedyActionSelector(epsilon=params.epsilon_start)
