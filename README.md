@@ -68,6 +68,11 @@ This ensures that when you run `01_actions.py`, Python will be able to find any 
 
 Please note that the `$(pwd)` command will only work in Unix-like terminals, such as those found on Linux or macOS. If you are using Windows, you will need to use an equivalent command for the Command Prompt or PowerShell.
 
+## Progress
+
+- [x] Chapter02 ~ Chapter09
+- [ ] Chapter11 ~ Chapter13
+
 ## Contributing
 
 We welcome contributions to this project! To contribute, please follow these steps:
