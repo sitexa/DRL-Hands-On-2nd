@@ -5,13 +5,14 @@ import time
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn as nn
 from torch import multiprocessing as mp
 from torch import optim
 from torch.autograd import Variable
 from torch.utils.tensorboard import SummaryWriter
+
+import ptan
 
 NOISE_STD = 0.05
 LEARNING_RATE = 0.001
@@ -85,7 +86,7 @@ def sample_noise(net, cuda=False):
     for p in net.parameters():
         noise_t = torch.from_numpy(np.random.normal(size=p.data.size()).astype(np.float32))
         if cuda:
-            noise_t = noise_t.cuda(async=True)
+            noise_t = noise_t.cuda(non_blocking=True)
         res.append(noise_t)
         neg.append(-noise_t)
     return res, neg

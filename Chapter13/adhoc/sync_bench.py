@@ -5,6 +5,7 @@ import time
 import timeit
 
 import gymnasium as gym
+
 import ptan
 
 sys.path.append(os.getcwd())
@@ -48,7 +49,7 @@ def new_sync(tgt_net, src_net):
     assert isinstance(tgt_net, nn.Module)
     assert isinstance(src_net, nn.Module)
     for tgt, src in zip(tgt_net.parameters(), src_net.parameters()):
-        tgt.data.copy_(src.data, broadcast=False, async=True)
+        tgt.data.copy_(src.data, broadcast=False, non_blocking=True)
 
 
 if __name__ == "__main__":
