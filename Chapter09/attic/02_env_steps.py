@@ -4,14 +4,15 @@ import random
 from datetime import datetime, timedelta
 
 import gymnasium as gym
-import ptan
-import ptan.ignite as ptan_ignite
 import torch
 import torch.optim as optim
 from ignite.contrib.handlers import tensorboard_logger as tb_logger
 from ignite.engine import Engine
 from ignite.metrics import RunningAverage
 from lib import common, dqn_model
+
+import ptan
+import ptan.ignite as ptan_ignite
 
 NAME = "02_env_steps"
 
@@ -35,7 +36,7 @@ if __name__ == "__main__":
 
     env = gym.make(params.env_name)
     env = ptan.common.wrappers.wrap_dqn(env)
-    env.seed(common.SEED)
+    env.unwrapped.seed(common.SEED)
 
     params.batch_size *= args.steps
     net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
