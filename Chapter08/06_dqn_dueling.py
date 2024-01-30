@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     env = gym.make(params.env_name)
     env = ptan.common.wrappers.wrap_dqn(env)
-    env.seed(common.SEED)
+    env.unwrapped.seed(common.SEED)
 
     net = dqn_extra.DuelingDQN(env.observation_space.shape, env.action_space.n).to(device)
 

@@ -4,12 +4,13 @@ import random
 
 import gymnasium as gym
 import numpy as np
-import ptan
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from ignite.engine import Engine
 from lib import common, dqn_extra
+
+import ptan
 
 NAME = "07_distrib"
 
@@ -29,7 +30,7 @@ def calc_loss(batch, net, tgt_net, gamma, device="cpu"):
     next_distr = next_distr.data.cpu().numpy()
 
     next_best_distr = next_distr[range(batch_size), next_acts]
-    dones = dones.astype(np.bool)
+    dones = dones.astype(bool)
 
     proj_distr = dqn_extra.distr_projection(next_best_distr, rewards, dones, gamma)
 
@@ -53,7 +54,7 @@ if __name__ == "__main__":
 
     env = gym.make(params.env_name)
     env = ptan.common.wrappers.wrap_dqn(env)
-    env.seed(common.SEED)
+    env.unwrapped.seed(common.SEED)
 
     net = dqn_extra.DistributionalDQN(env.observation_space.shape, env.action_space.n).to(device)
     print(net)
