@@ -22,7 +22,7 @@ scripts=(
 for script in "${scripts[@]}"; do
     if [ -f "$script" ]; then
         echo "Running $script with CUDA..."
-        timeout 7200 python "$script" --cuda
+        timeout 3600 python "$script" --cuda
         echo "$script finished."
         echo "--------------------------"
     else

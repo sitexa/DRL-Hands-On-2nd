@@ -47,7 +47,7 @@ if __name__ == "__main__":
     params = common.HYPERPARAMS["pong"]
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda")
-    parser.add_argument("--double", default=False, action="store_true", help="Enable double dqn")
+    parser.add_argument("--double", default=True, action="store_true", help="Enable double dqn")
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
 
