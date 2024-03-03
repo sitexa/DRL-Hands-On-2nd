@@ -11,7 +11,7 @@ from lib import dqn_model, utils, wrappers
 from torch.utils.tensorboard import SummaryWriter
 
 DEFAULT_ENV_NAME = "PongNoFrameskip-v4"
-MEAN_REWARD_BOUND = 19
+MEAN_REWARD_BOUND = 20  #19
 
 GAMMA = 0.99
 BATCH_SIZE = 32
@@ -60,7 +60,7 @@ class Agent:
         self._reset()
 
     def _reset(self):
-        self.state, _ = env.reset()
+        self.state, _ = self.env.reset()
         self.total_reward = 0.0
 
     @torch.no_grad()
@@ -68,7 +68,7 @@ class Agent:
         done_reward = None
 
         if np.random.random() < epsilon:
-            action = env.action_space.sample()
+            action = self.env.action_space.sample()
         else:
             state_a = np.array([self.state], copy=False)
             state_v = torch.tensor(state_a).to(device)
