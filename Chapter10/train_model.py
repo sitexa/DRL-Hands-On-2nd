@@ -13,8 +13,8 @@ from lib import common, data, environ, models, validation
 import ptan
 
 SAVES_DIR = pathlib.Path("saves")
-STOCKS = "data/YNDX_160101_161231.csv"
-VAL_STOCKS = "data/YNDX_150101_151231.csv"
+STOCKS = "./data/YNDX_160101_161231.csv"
+VAL_STOCKS = "./data/YNDX_150101_151231.csv"
 
 BATCH_SIZE = 32
 BARS_COUNT = 10
