@@ -2,7 +2,7 @@
 import argparse
 import pathlib
 
-import gym.wrappers
+import gymnasium as  gym
 import numpy as np
 import torch
 import torch.optim as optim
