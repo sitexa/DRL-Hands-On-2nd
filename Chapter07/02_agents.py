@@ -32,8 +32,8 @@ class PolicyNet(nn.Module):
 if __name__ == "__main__":
     net = DQNNet(n_actions=3)
     net_out = net(torch.zeros(2, 10))
-    print("dqn_net:")
-    print(net_out)
+    print("dqn_net:\n",net)
+    print("net_out:\n",net_out)
 
     selector = ptan.actions.ArgmaxActionSelector()
     agent = ptan.agent.DQNAgent(dqn_model=net, action_selector=selector)

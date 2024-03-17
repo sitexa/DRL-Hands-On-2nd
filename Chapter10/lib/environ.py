@@ -2,8 +2,8 @@ import enum
 
 import gymnasium as gym
 import numpy as np
-from gym.envs.registration import EnvSpec
-from gym.utils import seeding
+from gymnasium.envs.registration import EnvSpec
+from gymnasium.utils import seeding
 
 from . import data
 
