@@ -1,9 +1,10 @@
 import enum
 
-import gymnasium as gym
+import gymnasium
+import gym
 import numpy as np
 from gymnasium.envs.registration import EnvSpec
-from gymnasium.utils import seeding
+from gym.utils import seeding
 
 from . import data
 
@@ -144,7 +145,7 @@ class State1D(State):
         return res
 
 
-class StocksEnv(gym.Env):
+class StocksEnv(gymnasium.Env):
     metadata = {"render.modes": ["human"]}
     spec = EnvSpec("StocksEnv-v0")
 
