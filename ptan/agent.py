@@ -46,6 +46,7 @@ def default_states_preprocessor(states):
         np_states = np.expand_dims(states[0], 0)
     else:
         np_states = np.stack(states)
+
     return torch.tensor(np_states)
 
 
@@ -112,14 +113,8 @@ class PolicyAgent(BaseAgent):
     """
 
     # TODO: unify code with DQNAgent, as only action selector is differs.
-    def __init__(
-        self,
-        model,
-        action_selector=ptan_acts.ProbabilityActionSelector(),
-        device="cpu",
-        apply_softmax=False,
-        preprocessor=default_states_preprocessor,
-    ):
+    def __init__(self, model, action_selector=ptan_acts.ProbabilityActionSelector(), device="cpu",
+                 apply_softmax=False, preprocessor=default_states_preprocessor, ):
         self.model = model
         self.action_selector = action_selector
         self.device = device
@@ -153,14 +148,8 @@ class ActorCriticAgent(BaseAgent):
     and could be reused for rollouts calculations by ExperienceSource.
     """
 
-    def __init__(
-        self,
-        model,
-        action_selector=ptan_acts.ProbabilityActionSelector(),
-        device="cpu",
-        apply_softmax=False,
-        preprocessor=default_states_preprocessor,
-    ):
+    def __init__(self, model, action_selector=ptan_acts.ProbabilityActionSelector(), device="cpu",
+                 apply_softmax=False, preprocessor=default_states_preprocessor, ):
         self.model = model
         self.action_selector = action_selector
         self.device = device
@@ -188,4 +177,57 @@ class ActorCriticAgent(BaseAgent):
 
 
 if __name__ == "__main__":
-    pass
+
+    # 创建一个包含不同类型数据的NumPy数组
+    np_states = np.array([1, 2.5, "3", True, None], dtype=object)
+    nps_states = np.array([1, 2.5, "a string", True, None], dtype=object)
+    print("np_states:", np_states)
+    # as_states = nps_states.astype(np.float32)
+    # print("as_states:", as_states)
+
+    # 创建一个指定长度和类型的数组
+    _states = np.zeros(len(np_states), dtype=np.float32)
+
+    # 将NumPy数组中的对象转换为浮点数类型（或其他标准数值类型）
+    for i in range(len(np_states)):
+        if isinstance(np_states[i], (int, float, bool)):  # 检查对象是否为整数、浮点数或布尔值
+            np_states[i] = float(np_states[i])  # 将对象转换为浮点数
+        else:
+            np_states[i] = 0.0
+
+    print("float np_states:", np_states)
+
+    # 将NumPy数组转换为PyTorch张量
+    torch_tensor = torch.tensor(np_states.astype(np.float32))
+
+    # 检查转换后的张量
+    print("torch_tensor:", torch_tensor)
+
+    # torch_tensor2 = torch.from_numpy(np_states)
+    # print("torch_tensor2:", torch_tensor2)
+
+    va_states = np.vstack(np_states).astype(np.float32)
+    print("va_states:", va_states)
+    torch_tensor3 = torch.tensor(va_states)
+    print("torch_tensor3:", torch_tensor3)
+
+    # 创建一个数组列表，数组是列表的元素
+    ls_states = [np_states]
+    # 对数组列表沿指定维度（0表示外维）扩展维度
+    dm_states = np.expand_dims(ls_states[0], 0)
+    dm_states2 = np.expand_dims(ls_states, axis=0)
+    print("len(ls_states):", len(ls_states))
+    print("ls_states:", ls_states)
+    print("ls_states[0]:", ls_states[0])
+    print("len(ls_states[0]):", len(ls_states[0]))
+    print("dm_states:", dm_states)
+    print("dm_states2:", dm_states2)
+
+    # 创建一维数组，
+    np_states2 = np.array([5, 6, 7, False, ""], dtype=object)
+    # 创建数组列表
+    ls_states2 = [np_states, np_states2]
+    # 将数组列表进行堆迭
+    st_states = np.stack(ls_states2)
+    print("ls_states2:", ls_states2)
+    print("st_states:", st_states)

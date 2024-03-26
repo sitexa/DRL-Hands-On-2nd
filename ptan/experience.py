@@ -48,7 +48,7 @@ class ExperienceSource:
         states, agent_states, histories, cur_rewards, cur_steps = [], [], [], [], []
         env_lens = []
         for env in self.pool:
-            obs, _ = env.reset()
+            obs = env.reset()
             # if the environment is vectorized, all it's output is lists of results.
             # Details are here: https://github.com/openai/universe/blob/master/doc/env_semantics.rst
             if self.vectorized:
