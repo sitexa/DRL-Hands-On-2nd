@@ -2,8 +2,8 @@ import enum
 
 import gymnasium as gym
 import numpy as np
-from gym.envs.registration import EnvSpec
-from gym.utils import seeding
+from gymnasium.envs.registration import EnvSpec
+from gymnasium.utils import seeding
 
 from . import data
 
@@ -149,15 +149,15 @@ class StocksEnv(gym.Env):
     spec = EnvSpec("StocksEnv-v0")
 
     def __init__(
-        self,
-        prices,
-        bars_count=DEFAULT_BARS_COUNT,
-        commission=DEFAULT_COMMISSION_PERC,
-        reset_on_close=True,
-        state_1d=False,
-        random_ofs_on_reset=True,
-        reward_on_close=False,
-        volumes=False,
+            self,
+            prices,
+            bars_count=DEFAULT_BARS_COUNT,
+            commission=DEFAULT_COMMISSION_PERC,
+            reset_on_close=True,
+            state_1d=False,
+            random_ofs_on_reset=True,
+            reward_on_close=False,
+            volumes=False,
     ):
         assert isinstance(prices, dict)
         self._prices = prices
@@ -184,14 +184,16 @@ class StocksEnv(gym.Env):
         else:
             offset = bars
         self._state.reset(prices, offset)
-        return self._state.encode()
+        # add info {...} to return by pengxn
+        return self._state.encode(), {"instrument": self._instrument, "offset": self._state._offset}
 
     def step(self, action_idx):
         action = Actions(action_idx)
         reward, done = self._state.step(action)
         obs = self._state.encode()
         info = {"instrument": self._instrument, "offset": self._state._offset}
-        return obs, reward, done, info
+        # add done as truncated field ny pengxn
+        return obs, reward, done, done, info
 
     def render(self, mode="human", close=False):
         pass
@@ -201,7 +203,8 @@ class StocksEnv(gym.Env):
 
     def seed(self, seed=None):
         self.np_random, seed1 = seeding.np_random(seed)
-        seed2 = seeding.hash_seed(seed1 + 1) % 2**31
+        # replace seed2 with hash code of seed1 by pengxn
+        seed2 = hash(seed1 + 1) % 2 ** 31
         return [seed1, seed2]
 
     @classmethod

@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from lib import environ
+from . import environ
 
 METRICS = (
     "episode_reward",
@@ -14,7 +14,7 @@ def validation_run(env, net, episodes=100, device="cpu", epsilon=0.02, comission
     stats = {metric: [] for metric in METRICS}
 
     for episode in range(episodes):
-        obs = env.reset()
+        obs, _ = env.reset()
 
         total_reward = 0.0
         position = None
@@ -43,7 +43,7 @@ def validation_run(env, net, episodes=100, device="cpu", epsilon=0.02, comission
                 position = None
                 position_steps = None
 
-            obs, reward, done, _ = env.step(action_idx)
+            obs, reward, done, _, _ = env.step(action_idx)
             total_reward += reward
             episode_steps += 1
             if position_steps is not None:
