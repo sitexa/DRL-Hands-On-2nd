@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import numpy as np
-from lib import data
+from Chapter10.lib import data
 
 
 class TestMisc(TestCase):

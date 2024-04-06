@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from lib import data, environ
+from Chapter10.lib import data, environ
 
 
 class TestEnv(unittest.TestCase):

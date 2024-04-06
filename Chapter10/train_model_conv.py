@@ -2,7 +2,7 @@
 import argparse
 import pathlib
 
-import gym.wrappers
+import gymnasium.wrappers
 import numpy as np
 import torch
 import torch.optim as optim
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     else:
         raise RuntimeError("No data to train on")
 
-    env = gym.wrappers.TimeLimit(env, max_episode_steps=1000)
+    env = gymnasium.wrappers.TimeLimit(env, max_episode_steps=1000)
     val_data = {"YNDX": data.load_relative(val_path)}
     env_val = environ.StocksEnv(val_data, bars_count=BARS_COUNT, state_1d=True)
 
