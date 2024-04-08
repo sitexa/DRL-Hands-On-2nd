@@ -95,7 +95,7 @@ if __name__ == "__main__":
     engine = Engine(process_batch)
     tb = common.setup_ignite(engine, exp_source, f"simple-{args.run}", extra_metrics=("values_mean",))
 
-    @engine.on(ptan.ignite.PeriodEvents.ITERS_1000_COMPLETED)
+    @engine.on(ptan.ignite.PeriodEvents.ITERS_1000_COMPLETED)   # 定义事件处理器
     def sync_eval(engine: Engine):
         tgt_net.sync()
 
@@ -112,7 +112,7 @@ if __name__ == "__main__":
             torch.save(net.state_dict(), path)
             engine.state.best_mean_val = mean_val
 
-    @engine.on(ptan.ignite.PeriodEvents.ITERS_10000_COMPLETED)
+    @engine.on(ptan.ignite.PeriodEvents.ITERS_10000_COMPLETED)  # 定义事件处理器
     def validate(engine: Engine):
         res = validation.validation_run(env_tst, net, device=device)
         print("%d: tst: %s" % (engine.state.iteration, res))
@@ -134,12 +134,12 @@ if __name__ == "__main__":
             torch.save(net.state_dict(), path)
 
     event = ptan.ignite.PeriodEvents.ITERS_10000_COMPLETED
-    tst_metrics = [m + "_tst" for m in validation.METRICS]
-    tst_handler = tb_logger.OutputHandler(tag="test", metric_names=tst_metrics)
-    tb.attach(engine, log_handler=tst_handler, event_name=event)
+    tst_metrics = [m + "_tst" for m in validation.METRICS]  # 验证指标矩阵
+    tst_handler = tb_logger.OutputHandler(tag="test", metric_names=tst_metrics)     # TB日志处理器
+    tb.attach(engine, log_handler=tst_handler, event_name=event)    # 将事件附加到日志处理器上
 
-    val_metrics = [m + "_val" for m in validation.METRICS]
-    val_handler = tb_logger.OutputHandler(tag="validation", metric_names=val_metrics)
-    tb.attach(engine, log_handler=val_handler, event_name=event)
+    val_metrics = [m + "_val" for m in validation.METRICS]  # 性能指标矩阵
+    val_handler = tb_logger.OutputHandler(tag="validation", metric_names=val_metrics)   # TB日志处理器
+    tb.attach(engine, log_handler=val_handler, event_name=event)    # 将事件附加到日志处理器上
 
-    engine.run(common.batch_generator(buffer, REPLAY_INITIAL, BATCH_SIZE))
+    engine.run(common.batch_generator(buffer, REPLAY_INITIAL, BATCH_SIZE))  # 启动引擎

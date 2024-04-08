@@ -25,60 +25,60 @@ class State:
         assert commission_perc >= 0.0
         assert isinstance(reset_on_close, bool)
         assert isinstance(reward_on_close, bool)
-        self.bars_count = bars_count
-        self.commission_perc = commission_perc
-        self.reset_on_close = reset_on_close
-        self.reward_on_close = reward_on_close
-        self.volumes = volumes
+        self.bars_count = bars_count    # 柱状图条数
+        self.commission_perc = commission_perc  # 佣金
+        self.reset_on_close = reset_on_close    # 平仓时重置
+        self.reward_on_close = reward_on_close  # 平仓时计算奖励
+        self.volumes = volumes  # 包含成交量
 
     def reset(self, prices, offset):
         assert isinstance(prices, data.Prices)
         assert offset >= self.bars_count - 1
-        self.have_position = False
-        self.open_price = 0.0
-        self._prices = prices
-        self._offset = offset
+        self.have_position = False  # 持仓标志
+        self.open_price = 0.0   # 开盘价置0
+        self._prices = prices   # 价格张量
+        self._offset = offset   # 数据点偏移量
 
     @property
     def shape(self):
         # [h, l, c] * bars + position_flag + rel_profit
         if self.volumes:
-            return (4 * self.bars_count + 1 + 1,)
+            return (4 * self.bars_count + 1 + 1,)   # 假设bars_count=5，则 22
         else:
-            return (3 * self.bars_count + 1 + 1,)
+            return (3 * self.bars_count + 1 + 1,)   # 16
 
     def encode(self):
         """
         Convert current state into numpy array.
         """
-        res = np.ndarray(shape=self.shape, dtype=np.float32)
+        res = np.ndarray(shape=self.shape, dtype=np.float32)    # 22 / 16
         shift = 0
-        for bar_idx in range(-self.bars_count + 1, 1):
-            ofs = self._offset + bar_idx
-            res[shift] = self._prices.high[ofs]
+        for bar_idx in range(-self.bars_count + 1, 1):  # [-4,-3,-2,-1,0]
+            ofs = self._offset + bar_idx    # [0,1,2,3,4]
+            res[shift] = self._prices.high[ofs]     # res[0] = high[0]
             shift += 1
-            res[shift] = self._prices.low[ofs]
+            res[shift] = self._prices.low[ofs]  # res[1] = low[0]
             shift += 1
-            res[shift] = self._prices.close[ofs]
+            res[shift] = self._prices.close[ofs]    # res[2] = close[0]
             shift += 1
             if self.volumes:
-                res[shift] = self._prices.volume[ofs]
+                res[shift] = self._prices.volume[ofs]   # res[3] = volume[0]
                 shift += 1
-        res[shift] = float(self.have_position)
+        res[shift] = float(self.have_position)  # 假设有volume,res[20] = 0/1; 否则, res[15] = 0/1
         shift += 1
-        if not self.have_position:
-            res[shift] = 0.0
-        else:
-            res[shift] = self._cur_close() / self.open_price - 1.0
+        if not self.have_position:  # 如果 不持仓
+            res[shift] = 0.0    # 假设 含交易量 ，res[21] = 0; 假设 不含交易量, res[21] = 0;
+        else:   # 如果 持仓
+            res[shift] = self._cur_close() / self.open_price - 1.0  # 假设 含交易量 ，res[15] = ...; 假设 不含交易量, res[15] = ...;
         return res
 
     def _cur_close(self):
         """
-        Calculate real close price for the current bar
+        Calculate real close price for the current bar，当前价格条的真实收盘价。
         """
-        open = self._prices.open[self._offset]
-        rel_close = self._prices.close[self._offset]
-        return open * (1.0 + rel_close)
+        open = self._prices.open[self._offset]  # 开盘价
+        rel_close = self._prices.close[self._offset]  # 相对涨幅
+        return open * (1.0 + rel_close)  # 真实收盘价
 
     def step(self, action):
         """
@@ -90,25 +90,25 @@ class State:
         assert isinstance(action, Actions)
         reward = 0.0
         done = False
-        close = self._cur_close()
+        close = self._cur_close()  # 当前价格条的真实收盘价
         if action == Actions.Buy and not self.have_position:
-            self.have_position = True
-            self.open_price = close
-            reward -= self.commission_perc
+            self.have_position = True  # 持仓标识
+            self.open_price = close  # 开盘价=收盘价？
+            reward -= self.commission_perc  # 收益=原收益-佣金
         elif action == Actions.Close and self.have_position:
-            reward -= self.commission_perc
+            reward -= self.commission_perc  # 收益=原收益-佣金
             done |= self.reset_on_close
             if self.reward_on_close:
-                reward += 100.0 * (close / self.open_price - 1.0)
-            self.have_position = False
-            self.open_price = 0.0
+                reward += 100.0 * (close / self.open_price - 1.0)   # 平仓后计算奖励
+            self.have_position = False  # 平仓标志
+            self.open_price = 0.0   # 平仓后价格归零
 
-        self._offset += 1
+        self._offset += 1   # 数据点后移1条
         prev_close = close
         close = self._cur_close()
-        done |= self._offset >= self._prices.close.shape[0] - 1
+        done |= self._offset >= self._prices.close.shape[0] - 1     # 数据点已达终点
 
-        if self.have_position and not self.reward_on_close:
+        if self.have_position and not self.reward_on_close:     # 持仓且每步计算奖励（(非平仓计算奖励)）
             reward += 100.0 * (close / prev_close - 1.0)
 
         return reward, done
@@ -192,7 +192,7 @@ class StocksEnv(gym.Env):
         reward, done = self._state.step(action)
         obs = self._state.encode()
         info = {"instrument": self._instrument, "offset": self._state._offset}
-        # add done as truncated field ny pengxn
+        # add done as truncated field by pengxn
         return obs, reward, done, done, info
 
     def render(self, mode="human", close=False):
