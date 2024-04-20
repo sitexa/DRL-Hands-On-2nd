@@ -23,7 +23,10 @@ class PGN(nn.Module):
     def __init__(self, input_size, n_actions):
         super(PGN, self).__init__()
 
-        self.net = nn.Sequential(nn.Linear(input_size, 128), nn.ReLU(), nn.Linear(128, n_actions))
+        self.net = nn.Sequential(
+            nn.Linear(input_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, n_actions))
 
     def forward(self, x):
         return self.net(x)
